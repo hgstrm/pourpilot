@@ -4,6 +4,10 @@ import { useState } from "react";
 import type { RecipeOutput, BeanInfo } from "@/lib/recipe-schema";
 import { FEEDBACK_PRESETS } from "@/lib/adjust";
 import { haptics } from "@/lib/haptics";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Sparkles } from "lucide-react";
 
 export function AdjustBar({
   recipe,
@@ -41,27 +45,35 @@ export function AdjustBar({
   }
 
   return (
-    <div className="card">
-      <p className="section-title">Tune the brew</p>
-      <p className="total" style={{ marginTop: 0, marginBottom: 12 }}>
-        How did it taste? Tap to let the AI adjust &amp; you can re-push.
+    <Card className="gap-3">
+      <div className="flex items-center gap-2">
+        <Sparkles className="size-4 text-primary" />
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Tune the brew
+        </span>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        How did it taste? Tap to let the AI adjust, then re-push.
       </p>
-      <div className="chips">
+
+      <div className="flex flex-wrap gap-2">
         {FEEDBACK_PRESETS.map((p) => (
-          <button
+          <Button
             key={p.key}
-            className="chip"
+            variant="secondary"
+            size="sm"
+            className="rounded-full"
             disabled={busy !== null}
             onClick={() => adjust(p.feedback, p.key)}
           >
-            {busy === p.key ? <span className="spinner" /> : null}
+            {busy === p.key && <Loader2 className="size-4 animate-spin" />}
             {p.label}
-          </button>
+          </Button>
         ))}
       </div>
-      <div className="row" style={{ marginTop: 12 }}>
-        <input
-          className="chip-input"
+
+      <div className="flex gap-2.5">
+        <Input
           placeholder="Or describe it… e.g. 'a bit muddy, want cleaner'"
           value={custom}
           onChange={(e) => setCustom(e.target.value)}
@@ -71,15 +83,18 @@ export function AdjustBar({
             }
           }}
         />
-        <button
-          className="btn-ghost"
-          style={{ minWidth: 90 }}
+        <Button
+          variant="outline"
           disabled={!custom.trim() || busy !== null}
           onClick={() => adjust(custom.trim(), "custom")}
         >
-          {busy === "custom" ? <span className="spinner" /> : "Adjust"}
-        </button>
+          {busy === "custom" ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            "Adjust"
+          )}
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }

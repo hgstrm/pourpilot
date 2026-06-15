@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { haptics } from "@/lib/haptics";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, Download, Loader2 } from "lucide-react";
 
 interface XbloomRecipe {
   id: number;
@@ -43,52 +47,73 @@ export default function ImportPage() {
       router.push(`/recipes/${d.recipe.id}`);
     } catch (e) {
       haptics.warn();
-      setError(e instanceof Error ? e.message : "Import failed");
+      toast.error(e instanceof Error ? e.message : "Import failed");
       setImporting(null);
     }
   }
 
   return (
-    <main className="wrap">
-      <div className="topbar">
-        <Link href="/recipes" className="nav-link">
-          ‹ Back
-        </Link>
-        <h1 style={{ fontSize: 18 }}>Import from xBloom</h1>
-      </div>
+    <main className="app-wrap">
+      <header className="flex items-center gap-3 mb-5">
+        <Button asChild variant="outline" size="sm" className="rounded-full">
+          <Link href="/recipes">
+            <ChevronLeft className="size-4" /> Back
+          </Link>
+        </Button>
+        <h1 className="text-lg font-bold">Import from xBloom</h1>
+      </header>
 
-      {error && <div className="toast err">{error}</div>}
+      {error && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3.5 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       {!recipes && !error && (
-        <div className="card skeleton-card">
-          <div className="skeleton skeleton-line" style={{ width: "70%" }} />
-          <div className="skeleton skeleton-line" style={{ width: "50%" }} />
-          <div className="skeleton skeleton-line" style={{ width: "60%" }} />
-        </div>
+        <Card className="gap-3">
+          <div className="h-4 w-3/4 animate-pulse rounded bg-secondary" />
+          <div className="h-4 w-1/2 animate-pulse rounded bg-secondary" />
+          <div className="h-4 w-3/5 animate-pulse rounded bg-secondary" />
+        </Card>
       )}
 
       {recipes && recipes.length === 0 && (
-        <div className="empty">No recipes on your xBloom account.</div>
+        <div className="py-12 text-center text-muted-foreground">
+          No recipes on your xBloom account.
+        </div>
       )}
 
-      {recipes?.map((r) => (
-        <div key={r.id} className="recipe-item" style={{ cursor: "default" }}>
-          <div>
-            <div style={{ fontWeight: 700 }}>{r.name}</div>
-            <div className="meta">
-              {r.doseG}g · 1:{r.ratio} · grind {r.grindSize} · {r.pours.length}{" "}
-              pours
-            </div>
-          </div>
-          <button
-            className="chip"
-            disabled={importing !== null}
-            onClick={() => importOne(r)}
+      <div className="flex flex-col gap-2.5">
+        {recipes?.map((r) => (
+          <Card
+            key={r.id}
+            className="flex-row items-center justify-between gap-3 p-4"
           >
-            {importing === r.id ? <span className="spinner" /> : "Import"}
-          </button>
-        </div>
-      ))}
+            <div className="min-w-0">
+              <div className="truncate font-bold">{r.name}</div>
+              <div className="mt-0.5 text-sm text-muted-foreground">
+                {r.doseG}g · 1:{r.ratio} · grind {r.grindSize} ·{" "}
+                {r.pours.length} pours
+              </div>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="shrink-0 rounded-full"
+              disabled={importing !== null}
+              onClick={() => importOne(r)}
+            >
+              {importing === r.id ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  <Download className="size-4" /> Import
+                </>
+              )}
+            </Button>
+          </Card>
+        ))}
+      </div>
     </main>
   );
 }

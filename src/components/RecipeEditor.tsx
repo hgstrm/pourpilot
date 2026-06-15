@@ -2,6 +2,20 @@
 
 import type { RecipeOutput } from "@/lib/recipe-schema";
 import { PATTERNS, totalWater, targetWater } from "@/lib/client-types";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Check, Plus, Trash2, TriangleAlert } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Pour = RecipeOutput["pours"][number];
 
@@ -51,18 +65,19 @@ export function RecipeEditor({
   const off = Math.abs(total - target) > 5;
 
   return (
-    <div>
-      <div className="card">
-        <div className="field" style={{ marginBottom: 12 }}>
-          <label>Recipe name</label>
-          <input
+    <div className="flex flex-col gap-4">
+      <Card>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="recipe-name">Recipe name</Label>
+          <Input
+            id="recipe-name"
             value={recipe.name}
             maxLength={40}
             onChange={(e) => set("name", e.target.value)}
           />
         </div>
 
-        <div className="grid">
+        <div className="grid grid-cols-2 gap-3">
           <NumberField
             label="Dose (g)"
             value={recipe.doseG}
@@ -97,30 +112,44 @@ export function RecipeEditor({
           />
         </div>
 
-        <p className={off ? "total warn" : "total"}>
-          Total water: {total}ml &middot; target {target}ml
-          {off ? " — pours don't sum to dose × ratio" : " ✓"}
+        <p
+          className={cn(
+            "flex items-center gap-1.5 text-sm",
+            off ? "text-destructive" : "text-muted-foreground",
+          )}
+        >
+          {off ? (
+            <TriangleAlert className="size-4" />
+          ) : (
+            <Check className="size-4 text-accent" />
+          )}
+          Total water {total}ml · target {target}ml
+          {off && " — pours don't sum to dose × ratio"}
         </p>
-      </div>
+      </Card>
 
-      <p className="section-title">Pours ({recipe.pours.length})</p>
+      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        Pours ({recipe.pours.length})
+      </p>
 
       {recipe.pours.map((p, i) => (
-        <div className="pour" key={i}>
-          <div className="pour-head">
-            <span className="name">{i === 0 ? "Bloom" : `Pour ${i + 1}`}</span>
+        <Card key={i} className="gap-3 bg-secondary/40 p-4">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-primary">
+              {i === 0 ? "Bloom" : `Pour ${i + 1}`}
+            </span>
             {recipe.pours.length > 1 && (
-              <button
-                className="btn-danger"
-                style={{ minHeight: 40, padding: "0 14px" }}
+              <Button
+                variant="destructive"
+                size="sm"
                 onClick={() => removePour(i)}
               >
-                Remove
-              </button>
+                <Trash2 className="size-4" /> Remove
+              </Button>
             )}
           </div>
 
-          <div className="pour-grid">
+          <div className="grid grid-cols-2 gap-3">
             <NumberField
               label="Water (ml)"
               value={p.volumeMl}
@@ -137,20 +166,25 @@ export function RecipeEditor({
               step={1}
               onChange={(v) => setPour(i, { temperatureC: v })}
             />
-            <div className="field">
-              <label>Pattern</label>
-              <select
+            <div className="flex flex-col gap-2">
+              <Label>Pattern</Label>
+              <Select
                 value={p.pattern}
-                onChange={(e) =>
-                  setPour(i, { pattern: e.target.value as Pour["pattern"] })
+                onValueChange={(v) =>
+                  setPour(i, { pattern: v as Pour["pattern"] })
                 }
               >
-                {PATTERNS.map((pat) => (
-                  <option key={pat} value={pat}>
-                    {pat}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="capitalize">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PATTERNS.map((pat) => (
+                    <SelectItem key={pat} value={pat} className="capitalize">
+                      {pat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <NumberField
               label="Flow (ml/s)"
@@ -170,35 +204,33 @@ export function RecipeEditor({
             />
           </div>
 
-          <div className="checks">
-            <label>
-              <input
-                type="checkbox"
+          <div className="flex gap-5 pt-1">
+            <label className="flex items-center gap-2.5 text-sm text-muted-foreground">
+              <Checkbox
                 checked={p.agitateBefore}
-                onChange={(e) => setPour(i, { agitateBefore: e.target.checked })}
+                onCheckedChange={(c) =>
+                  setPour(i, { agitateBefore: c === true })
+                }
               />
               Agitate before
             </label>
-            <label>
-              <input
-                type="checkbox"
+            <label className="flex items-center gap-2.5 text-sm text-muted-foreground">
+              <Checkbox
                 checked={p.agitateAfter}
-                onChange={(e) => setPour(i, { agitateAfter: e.target.checked })}
+                onCheckedChange={(c) =>
+                  setPour(i, { agitateAfter: c === true })
+                }
               />
               Agitate after
             </label>
           </div>
-        </div>
+        </Card>
       ))}
 
       {recipe.pours.length < 6 && (
-        <button
-          className="btn-ghost"
-          style={{ width: "100%", marginBottom: 8 }}
-          onClick={addPour}
-        >
-          + Add pour
-        </button>
+        <Button variant="outline" className="w-full" onClick={addPour}>
+          <Plus className="size-4" /> Add pour
+        </Button>
       )}
     </div>
   );
@@ -220,9 +252,9 @@ function NumberField({
   onChange: (v: number) => void;
 }) {
   return (
-    <div className="field">
-      <label>{label}</label>
-      <input
+    <div className="flex flex-col gap-2">
+      <Label>{label}</Label>
+      <Input
         type="number"
         inputMode="decimal"
         value={value}

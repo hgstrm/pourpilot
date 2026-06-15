@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import type { RecipeOutput } from "@/lib/recipe-schema";
 import { haptics } from "@/lib/haptics";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, Star, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Brew {
   id: string;
@@ -64,66 +69,79 @@ export function BrewLog({
   }
 
   return (
-    <div className="card">
-      <p className="section-title">Brew log</p>
+    <Card className="gap-3">
+      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        Brew log
+      </span>
 
-      <div className="stars" role="radiogroup" aria-label="Rating">
+      <div className="flex gap-1" role="radiogroup" aria-label="Rating">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             type="button"
-            className={`star ${n <= rating ? "on" : ""}`}
             aria-label={`${n} star${n > 1 ? "s" : ""}`}
+            className="p-1.5 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 rounded-md"
             onClick={() => {
               setRating(n === rating ? 0 : n);
               haptics.light();
             }}
           >
-            ★
+            <Star
+              className={cn(
+                "size-7 transition-colors",
+                n <= rating
+                  ? "fill-primary text-primary"
+                  : "text-border",
+              )}
+            />
           </button>
         ))}
       </div>
 
-      <textarea
-        className="brew-notes"
+      <Textarea
         rows={2}
         placeholder="Tasting notes for this brew (optional)"
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
       />
-      <button
-        className="btn-ghost"
-        style={{ width: "100%", marginTop: 10 }}
+      <Button
+        variant="outline"
+        className="w-full"
         onClick={logBrew}
         disabled={busy || (!rating && !notes.trim())}
       >
-        {busy ? <span className="spinner" /> : "Log this brew"}
-      </button>
+        {busy ? <Loader2 className="size-4 animate-spin" /> : "Log this brew"}
+      </Button>
 
       {brews.length > 0 && (
-        <div style={{ marginTop: 16 }}>
+        <div className="flex flex-col">
           {brews.map((b) => (
-            <div className="brew-row" key={b.id}>
-              <div>
-                <span className="brew-stars">
+            <div
+              key={b.id}
+              className="flex items-start justify-between gap-3 border-t py-3"
+            >
+              <div className="min-w-0">
+                <span className="tracking-widest text-primary text-sm">
                   {b.rating ? "★".repeat(b.rating) : "—"}
                 </span>
-                {b.notes && <span className="brew-note"> {b.notes}</span>}
-                <div className="meta">
+                {b.notes && (
+                  <span className="text-foreground"> {b.notes}</span>
+                )}
+                <div className="text-xs text-muted-foreground mt-0.5">
                   {new Date(b.createdAt).toLocaleDateString()}
                 </div>
               </div>
               <button
-                className="brew-del"
                 aria-label="Delete brew"
+                className="text-muted-foreground hover:text-destructive shrink-0 p-1"
                 onClick={() => del(b.id)}
               >
-                ×
+                <X className="size-4" />
               </button>
             </div>
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

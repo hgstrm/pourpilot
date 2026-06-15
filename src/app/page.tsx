@@ -2,23 +2,37 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import type { AnalysisResult, BeanInfo, RecipeOutput } from "@/lib/recipe-schema";
 import { RecipeEditor } from "@/components/RecipeEditor";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { haptics } from "@/lib/haptics";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import {
+  Camera,
+  Loader2,
+  Plus,
+  Search,
+  Sparkles,
+  X,
+} from "lucide-react";
 
 type Stage = "capture" | "analyzing" | "review";
-type Toast = { kind: "ok" | "err"; msg: string; href?: string } | null;
 
 export default function Home() {
   const [stage, setStage] = useState<Stage>("capture");
   const [images, setImages] = useState<string[]>([]);
   const [bean, setBean] = useState<BeanInfo | null>(null);
   const [recipe, setRecipe] = useState<RecipeOutput | null>(null);
-  const [reasoning, setReasoning] = useState<string>("");
+  const [reasoning, setReasoning] = useState("");
   const [busy, setBusy] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
-  const [toast, setToast] = useState<Toast>(null);
   const [forceSearch, setForceSearch] = useState(false);
   const [sources, setSources] = useState<string[]>([]);
   const [searched, setSearched] = useState(false);
@@ -39,7 +53,6 @@ export default function Home() {
 
   async function analyze() {
     if (images.length === 0) return;
-    setToast(null);
     setStage("analyzing");
     try {
       const res = await fetch("/api/analyze", {
@@ -67,7 +80,7 @@ export default function Home() {
       setStage("review");
     } catch (e) {
       haptics.warn();
-      setToast({ kind: "err", msg: errMsg(e) });
+      toast.error(errMsg(e));
       setStage("capture");
     }
   }
@@ -75,7 +88,6 @@ export default function Home() {
   async function save() {
     if (!recipe) return;
     setBusy(true);
-    setToast(null);
     try {
       if (savedId) {
         const res = await fetch(`/api/recipes/${savedId}`, {
@@ -84,7 +96,7 @@ export default function Home() {
           body: JSON.stringify({ recipe, bean }),
         });
         if (!res.ok) throw new Error((await res.json()).error);
-        setToast({ kind: "ok", msg: "Saved changes." });
+        toast.success("Saved changes.");
       } else {
         const res = await fetch("/api/recipes", {
           method: "POST",
@@ -94,10 +106,10 @@ export default function Home() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         setSavedId(data.recipe.id);
-        setToast({ kind: "ok", msg: "Saved to your collection." });
+        toast.success("Saved to your collection.");
       }
     } catch (e) {
-      setToast({ kind: "err", msg: errMsg(e) });
+      toast.error(errMsg(e));
     } finally {
       setBusy(false);
     }
@@ -106,9 +118,7 @@ export default function Home() {
   async function push() {
     if (!recipe) return;
     setBusy(true);
-    setToast(null);
     try {
-      // Make sure it's saved first so we can track the xBloom id.
       let id = savedId;
       if (!id) {
         const res = await fetch("/api/recipes", {
@@ -121,7 +131,6 @@ export default function Home() {
         id = data.recipe.id;
         setSavedId(id);
       }
-
       const res = await fetch("/api/push", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -129,14 +138,15 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setToast({
-        kind: "ok",
-        msg: data.updated
+      haptics.success();
+      toast.success(
+        data.updated
           ? "Updated on your xBloom — open the app to brew."
           : "Sent to your xBloom — open the app to brew!",
-      });
+      );
     } catch (e) {
-      setToast({ kind: "err", msg: errMsg(e) });
+      haptics.warn();
+      toast.error(errMsg(e));
     } finally {
       setBusy(false);
     }
@@ -148,7 +158,6 @@ export default function Home() {
     setBean(null);
     setRecipe(null);
     setSavedId(null);
-    setToast(null);
     setSources([]);
     setSearched(false);
     setUrl("");
@@ -156,40 +165,27 @@ export default function Home() {
   }
 
   return (
-    <main className="wrap">
-      <div className="topbar">
-        <div className="brand">
-          <span className="dot" />
-          <h1>Beanerator</h1>
+    <main className="app-wrap">
+      <header className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2.5">
+          <span className="size-3 rounded-full bg-primary shadow-[0_0_16px_var(--primary)]" />
+          <h1 className="text-xl font-bold tracking-tight">Beanerator</h1>
         </div>
-        <div className="row" style={{ gap: 8 }}>
-          <Link href="/recipes" className="nav-link">
-            Saved
-          </Link>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm" className="rounded-full">
+            <Link href="/recipes">Saved</Link>
+          </Button>
           <ThemeToggle />
         </div>
-      </div>
-
-      {toast && (
-        <div className={`toast ${toast.kind}`}>
-          {toast.msg}
-          {toast.href && (
-            <>
-              {" "}
-              <a href={toast.href} target="_blank" rel="noreferrer">
-                open
-              </a>
-            </>
-          )}
-        </div>
-      )}
+      </header>
 
       {stage === "capture" && (
-        <>
-          <div className="card">
-            <div className="field" style={{ marginBottom: 14 }}>
-              <label>Product link (optional)</label>
-              <input
+        <div className="flex flex-col gap-4">
+          <Card>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="url">Product link (optional)</Label>
+              <Input
+                id="url"
                 type="url"
                 inputMode="url"
                 placeholder="https://roaster.com/products/…"
@@ -197,39 +193,46 @@ export default function Home() {
                 onChange={(e) => setUrl(e.target.value)}
               />
             </div>
-            <div className="field">
-              <label>Notes for the AI (optional)</label>
-              <textarea
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="details">Notes for the AI (optional)</Label>
+              <Textarea
+                id="details"
+                rows={3}
                 placeholder="e.g. natural Ethiopian, I like it bright; grind a touch finer; 18g dose"
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
-                rows={3}
               />
             </div>
-            <label className="checks" style={{ marginTop: 12 }}>
-              <input
-                type="checkbox"
+            <label className="flex items-center gap-2.5 text-sm text-muted-foreground">
+              <Checkbox
                 checked={forceSearch}
-                onChange={(e) => setForceSearch(e.target.checked)}
+                onCheckedChange={(c) => setForceSearch(c === true)}
               />
-              🔎 Always look up the bean online
+              <Search className="size-4" /> Always look up the bean online
             </label>
-          </div>
+          </Card>
 
           {images.length > 0 && (
-            <div className="thumbs">
+            <div className="flex flex-wrap gap-2.5">
               {images.map((img, i) => (
-                <div className="thumb" key={i}>
+                <div
+                  key={i}
+                  className="relative size-24 overflow-hidden rounded-xl border bg-black"
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img} alt={`bag ${i + 1}`} />
+                  <img
+                    src={img}
+                    alt={`bag ${i + 1}`}
+                    className="size-full object-cover"
+                  />
                   <button
-                    className="thumb-x"
                     aria-label="Remove photo"
+                    className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-black/60 text-white"
                     onClick={() => removePhoto(i)}
                   >
-                    ×
+                    <X className="size-3.5" />
                   </button>
-                  <span className="thumb-tag">
+                  <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-center text-[11px] text-white">
                     {i === 0 ? "Front" : i === 1 ? "Back" : `#${i + 1}`}
                   </span>
                 </div>
@@ -238,11 +241,12 @@ export default function Home() {
           )}
 
           {images.length < 3 && (
-            <label className="dropzone">
-              <span className="big">
-                📷 {images.length === 0 ? "Snap your bean bag" : "Add another photo"}
+            <label className="flex min-h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-[1.5px] border-dashed bg-secondary/50 p-8 text-center transition-colors hover:border-primary hover:bg-secondary">
+              <Camera className="size-7 text-primary" />
+              <span className="font-semibold">
+                {images.length === 0 ? "Snap your bean bag" : "Add another photo"}
               </span>
-              <span className="small">
+              <span className="text-sm text-muted-foreground">
                 {images.length === 0
                   ? "Tap for the front — add the back too for more detail"
                   : "e.g. the back of the bag with origin & process"}
@@ -251,6 +255,7 @@ export default function Home() {
                 type="file"
                 accept="image/*"
                 capture="environment"
+                className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   if (f) addPhoto(f);
@@ -261,74 +266,76 @@ export default function Home() {
           )}
 
           {images.length > 0 && (
-            <button
-              className="btn-primary"
-              style={{ marginTop: 14 }}
-              onClick={analyze}
-            >
-              ✨ Analyze {images.length > 1 ? `${images.length} photos` : "photo"}
-            </button>
+            <Button size="lg" onClick={analyze}>
+              <Sparkles className="size-4" />
+              Analyze {images.length > 1 ? `${images.length} photos` : "photo"}
+            </Button>
           )}
 
-          <p className="total" style={{ textAlign: "center" }}>
+          <p className="text-center text-sm text-muted-foreground">
             Add a product link or notes if you have them, snap the front (and
             back) of the bag, then analyze. The AI reads the label, looks up
             details when needed, and designs a pour-over you can tweak and send.
           </p>
-        </>
-      )}
-
-      {stage === "analyzing" && (
-        <div className="card">
-          {image && <img className="preview" src={image} alt="bean bag" />}
-          <p style={{ textAlign: "center" }}>
-            <span className="spinner" style={{ borderTopColor: "#c9a36b" }} />
-            Reading the label{forceSearch ? ", searching the web," : ""} &amp;
-            designing your recipe…
-          </p>
         </div>
       )}
 
-      {stage === "review" && recipe && (
-        <>
+      {stage === "analyzing" && (
+        <Card className="items-center text-center">
           {image && (
-            <img className="preview" src={image} alt="bean bag" />
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={image}
+              alt="bean bag"
+              className="max-h-72 w-full rounded-lg border object-contain bg-black"
+            />
+          )}
+          <p className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Loader2 className="size-4 animate-spin text-primary" />
+            Reading the label{forceSearch ? ", searching the web," : ""} &
+            designing your recipe…
+          </p>
+        </Card>
+      )}
+
+      {stage === "review" && recipe && (
+        <div className="flex flex-col gap-4">
+          {image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={image}
+              alt="bean bag"
+              className="max-h-72 w-full rounded-xl border object-contain bg-black"
+            />
           )}
 
           {bean && (
-            <div className="card">
-              <p className="bean-name">{bean.name}</p>
-              <div className="bean-tags">
+            <Card className="gap-3">
+              <p className="text-lg font-bold">{bean.name}</p>
+              <div className="flex flex-wrap gap-2">
                 {bean.roaster && (
-                  <span className="tag">
-                    <strong>Roaster:</strong> {bean.roaster}
-                  </span>
+                  <Badge variant="secondary">{bean.roaster}</Badge>
                 )}
                 {bean.origin && (
-                  <span className="tag">
-                    <strong>Origin:</strong> {bean.origin}
-                  </span>
+                  <Badge variant="secondary">{bean.origin}</Badge>
                 )}
                 {bean.process && (
-                  <span className="tag">
-                    <strong>Process:</strong> {bean.process}
-                  </span>
+                  <Badge variant="secondary">{bean.process}</Badge>
                 )}
-                <span className="tag">
-                  <strong>Roast:</strong> {bean.roastLevel}
-                </span>
+                <Badge variant="accent">{bean.roastLevel}</Badge>
                 {bean.tastingNotes?.map((n) => (
-                  <span className="tag" key={n}>
+                  <Badge key={n} variant="outline">
                     {n}
-                  </span>
+                  </Badge>
                 ))}
               </div>
 
               {searched && (
-                <p className="total" style={{ marginTop: 12 }}>
+                <p className="text-sm text-muted-foreground">
                   {sources.length > 0 ? (
                     <>
-                      🔎 Looked up online ·{" "}
+                      <Search className="mr-1 inline size-3.5" />
+                      Looked up online ·{" "}
                       {sources.map((s, i) => (
                         <span key={s}>
                           {i > 0 && " · "}
@@ -336,7 +343,7 @@ export default function Home() {
                             href={s}
                             target="_blank"
                             rel="noreferrer"
-                            style={{ color: "var(--accent)" }}
+                            className="text-primary underline-offset-2 hover:underline"
                           >
                             {hostOf(s)}
                           </a>
@@ -344,35 +351,46 @@ export default function Home() {
                       ))}
                     </>
                   ) : (
-                    "🔎 Searched online but found no specific details — using a sensible default for this bean."
+                    "Searched online but found no specific details — using a sensible default for this bean."
                   )}
                 </p>
               )}
-            </div>
+            </Card>
           )}
 
-          {reasoning && <p className="reasoning">{reasoning}</p>}
+          {reasoning && (
+            <p className="border-l-2 border-primary pl-3 text-sm italic text-muted-foreground">
+              {reasoning}
+            </p>
+          )}
 
           <RecipeEditor recipe={recipe} onChange={setRecipe} />
 
-          <button
-            className="btn-ghost"
-            style={{ width: "100%", marginTop: 4 }}
-            onClick={reset}
-          >
+          <Button variant="ghost" className="w-full" onClick={reset}>
+            <Plus className="size-4 rotate-45" />
             Start over
-          </button>
-        </>
+          </Button>
+        </div>
       )}
 
       {stage === "review" && recipe && (
-        <div className="actionbar">
-          <button className="btn-primary" onClick={save} disabled={busy}>
-            {savedId ? "Save" : "Save"}
-          </button>
-          <button className="btn-push" onClick={push} disabled={busy}>
-            {busy ? <span className="spinner" /> : "Send to xBloom"}
-          </button>
+        <div className="action-bar">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={save}
+            disabled={busy}
+          >
+            Save
+          </Button>
+          <Button
+            variant="accent"
+            className="flex-1"
+            onClick={push}
+            disabled={busy}
+          >
+            {busy ? <Loader2 className="size-4 animate-spin" /> : "Send to xBloom"}
+          </Button>
         </div>
       )}
     </main>

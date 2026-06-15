@@ -1,40 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { haptics } from "@/lib/haptics";
 
-type Theme = "light" | "dark";
-
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  useEffect(() => {
-    const current =
-      (document.documentElement.getAttribute("data-theme") as Theme) ||
-      "light";
-    setTheme(current);
-  }, []);
-
-  function toggle() {
-    const next: Theme = theme === "light" ? "dark" : "light";
-    setTheme(next);
-    document.documentElement.setAttribute("data-theme", next);
-    try {
-      localStorage.setItem("theme", next);
-    } catch {
-      /* ignore */
-    }
-    haptics.light();
-  }
+  const isDark = theme === "dark";
 
   return (
-    <button
-      className="theme-toggle"
-      onClick={toggle}
-      aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-      title="Toggle theme"
+    <Button
+      variant="outline"
+      size="icon"
+      className="rounded-full"
+      aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+      onClick={() => {
+        setTheme(isDark ? "light" : "dark");
+        haptics.light();
+      }}
     >
-      {theme === "light" ? "🌙" : "☀️"}
-    </button>
+      {mounted && isDark ? (
+        <Sun className="size-4.5" />
+      ) : (
+        <Moon className="size-4.5" />
+      )}
+    </Button>
   );
 }
