@@ -1,37 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#241d18"/>
-      <stop offset="1" stop-color="#171210"/>
-    </linearGradient>
-    <linearGradient id="bean" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#e3b576"/>
-      <stop offset="1" stop-color="#b8843a"/>
-    </linearGradient>
-    <linearGradient id="spark" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#b7e0b0"/>
-      <stop offset="1" stop-color="#6fae67"/>
-    </linearGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#241d18"/><stop offset="1" stop-color="#171210"/></linearGradient>
+    <linearGradient id="bean" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3b576"/><stop offset="1" stop-color="#b8843a"/></linearGradient>
+    <linearGradient id="spark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b7e0b0"/><stop offset="1" stop-color="#6fae67"/></linearGradient>
   </defs>
-
-  <!-- tile -->
   <rect width="512" height="512" rx="116" fill="url(#tile)"/>
-
-  <!-- coffee bean, slightly lower-left to make room for the sparkle -->
-  <g transform="rotate(-18 244 280)">
-    <ellipse cx="244" cy="280" rx="126" ry="168" fill="url(#bean)"/>
-    <path d="M244 128 C204 204 204 356 244 432"
-          fill="none" stroke="#1c1612" stroke-width="30" stroke-linecap="round"/>
+  <g transform="rotate(-18 250 262)">
+    <ellipse cx="250" cy="262" rx="124" ry="166" fill="url(#bean)"/>
+    <path d="M250 108 C211 184 211 340 250 416" fill="none" stroke="#1c1612" stroke-width="30" stroke-linecap="round"/>
   </g>
-
-  <!-- big AI sparkle, top-right, with a ring halo + small companion -->
-  <g>
-    <path d="M392 84
-             C399 142 426 169 484 176
-             C426 183 399 210 392 268
-             C385 210 358 183 300 176
-             C358 169 385 142 392 84 Z"
-          fill="url(#spark)"/>
-    <circle cx="324" cy="96" r="13" fill="#b7e0b0"/>
-  </g>
+  <path d="M372 120 C377 160 394 177 434 182 C394 187 377 204 372 244 C367 204 350 187 310 182 C350 177 367 160 372 120 Z" fill="url(#spark)"/>
 </svg>
