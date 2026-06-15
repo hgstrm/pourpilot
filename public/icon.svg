@@ -8,24 +8,30 @@
       <stop offset="0" stop-color="#e3b576"/>
       <stop offset="1" stop-color="#b8843a"/>
     </linearGradient>
+    <linearGradient id="spark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b7e0b0"/>
+      <stop offset="1" stop-color="#6fae67"/>
+    </linearGradient>
   </defs>
 
   <!-- tile -->
   <rect width="512" height="512" rx="116" fill="url(#tile)"/>
 
-  <!-- coffee bean, centered & tilted -->
-  <g transform="rotate(-18 256 256)">
-    <ellipse cx="256" cy="256" rx="132" ry="176" fill="url(#bean)"/>
-    <!-- center seam runs down the middle of the bean -->
-    <path d="M256 96 C214 176 214 336 256 416"
+  <!-- coffee bean, slightly lower-left to make room for the sparkle -->
+  <g transform="rotate(-18 244 280)">
+    <ellipse cx="244" cy="280" rx="126" ry="168" fill="url(#bean)"/>
+    <path d="M244 128 C204 204 204 356 244 432"
           fill="none" stroke="#1c1612" stroke-width="30" stroke-linecap="round"/>
   </g>
 
-  <!-- AI sparkle, top-right -->
-  <path d="M388 120
-           C390 148 401 159 429 161
-           C401 163 390 174 388 202
-           C386 174 375 163 347 161
-           C375 159 386 148 388 120 Z"
-        fill="#8fb98a"/>
+  <!-- big AI sparkle, top-right, with a ring halo + small companion -->
+  <g>
+    <path d="M392 84
+             C399 142 426 169 484 176
+             C426 183 399 210 392 268
+             C385 210 358 183 300 176
+             C358 169 385 142 392 84 Z"
+          fill="url(#spark)"/>
+    <circle cx="324" cy="96" r="13" fill="#b7e0b0"/>
+  </g>
 </svg>
