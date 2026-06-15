@@ -160,7 +160,7 @@ export default function Home() {
       <div className="topbar">
         <div className="brand">
           <span className="dot" />
-          <h1>Bean → Brew</h1>
+          <h1>AnyBean</h1>
         </div>
         <div className="row" style={{ gap: 8 }}>
           <Link href="/recipes" className="nav-link">

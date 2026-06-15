@@ -2,12 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "xBloom Recipe Maker",
-  description: "Snap a bean bag, get an AI pour-over recipe, push it to xBloom.",
+  title: "AnyBean — snap a bag, get a recipe",
+  description:
+    "Snap a photo of any coffee bag and get an AI pour-over recipe, sent straight to your xBloom.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "xBloom Recipes",
+    title: "AnyBean",
   },
 };
 

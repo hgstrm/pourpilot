@@ -1,7 +1,7 @@
 {
-  "name": "xBloom Recipe Maker",
-  "short_name": "Bean→Brew",
-  "description": "Snap a bean bag, get an AI pour-over recipe, push it to xBloom.",
+  "name": "AnyBean",
+  "short_name": "AnyBean",
+  "description": "Snap a photo of any coffee bag and get an AI pour-over recipe, sent straight to your xBloom.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f6f3ee",
