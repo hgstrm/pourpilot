@@ -17,9 +17,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# env files
+# env files (keep .env.example tracked)
 .env
-.env*.local
+.env.*
+!.env.example
+
+# local tooling / editors
+.vercel
+.idea
+.vscode
+*.local
 
 # typescript
 *.tsbuildinfo

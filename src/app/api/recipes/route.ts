@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listSavedRecipes, createSavedRecipe } from "@/lib/db";
 import { recipeSchema, beanInfoSchema } from "@/lib/recipe-schema";
+import { safeError } from "@/lib/api-error";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -16,11 +17,7 @@ export async function GET() {
     const recipes = await listSavedRecipes();
     return NextResponse.json({ recipes });
   } catch (err) {
-    console.error("[recipes:list] error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to list recipes" },
-      { status: 500 },
-    );
+    return safeError("recipes:list", err, 500, "Couldn't load your recipes.");
   }
 }
 
@@ -41,10 +38,6 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ recipe: saved });
   } catch (err) {
-    console.error("[recipes:create] error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to save recipe" },
-      { status: 500 },
-    );
+    return safeError("recipes:create", err, 500, "Couldn't save the recipe.");
   }
 }

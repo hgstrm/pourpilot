@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listBrews, createBrew } from "@/lib/db";
 import { recipeSchema } from "@/lib/recipe-schema";
+import { safeError } from "@/lib/api-error";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -14,9 +15,13 @@ const body = z.object({
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: Ctx) {
-  const { id } = await params;
-  const brews = await listBrews(id);
-  return NextResponse.json({ brews });
+  try {
+    const { id } = await params;
+    const brews = await listBrews(id);
+    return NextResponse.json({ brews });
+  } catch (err) {
+    return safeError("brews:list", err, 500, "Couldn't load brews.");
+  }
 }
 
 export async function POST(req: NextRequest, { params }: Ctx) {
@@ -32,10 +37,6 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     const brew = await createBrew({ recipeId: id, ...parsed.data });
     return NextResponse.json({ brew });
   } catch (err) {
-    console.error("[brews:create] error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to log brew" },
-      { status: 500 },
-    );
+    return safeError("brews:create", err, 500, "Couldn't log the brew.");
   }
 }

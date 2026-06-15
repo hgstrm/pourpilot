@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeBeanImage } from "@/lib/analyze";
+import { safeError } from "@/lib/api-error";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -38,10 +39,6 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(result);
   } catch (err) {
-    console.error("[analyze] error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Analysis failed" },
-      { status: 500 },
-    );
+    return safeError("analyze", err, 500, "Couldn't analyze that photo.");
   }
 }

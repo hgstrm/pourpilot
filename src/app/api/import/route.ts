@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { login, listRecipesFull } from "@/lib/xbloom/client";
 import { createSavedRecipe } from "@/lib/db";
 import type { RecipeOutput } from "@/lib/recipe-schema";
+import { safeError } from "@/lib/api-error";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -21,11 +22,7 @@ export async function GET() {
     const recipes = await listRecipesFull(session);
     return NextResponse.json({ recipes });
   } catch (err) {
-    console.error("[import:list] error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to list xBloom recipes" },
-      { status: 500 },
-    );
+    return safeError("import:list", err, 500, "Couldn't list your xBloom recipes.");
   }
 }
 
@@ -73,10 +70,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ recipe: saved });
   } catch (err) {
-    console.error("[import:create] error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to import" },
-      { status: 500 },
-    );
+    return safeError("import:create", err, 500, "Couldn't import that recipe.");
   }
 }

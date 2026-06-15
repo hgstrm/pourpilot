@@ -3,6 +3,7 @@ import { login, createRecipe, editRecipe } from "@/lib/xbloom/client";
 import type { CoffeeRecipe } from "@/lib/xbloom/types";
 import { recipeSchema } from "@/lib/recipe-schema";
 import { getSavedRecipe, updateSavedRecipe } from "@/lib/db";
+import { safeError } from "@/lib/api-error";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -81,10 +82,6 @@ export async function POST(req: NextRequest) {
       shareUrl: created.shareUrl,
     });
   } catch (err) {
-    console.error("[push] error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Push failed" },
-      { status: 500 },
-    );
+    return safeError("push", err, 500, "Couldn't send the recipe to xBloom.");
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adjustRecipe } from "@/lib/adjust";
 import { recipeSchema, beanInfoSchema } from "@/lib/recipe-schema";
+import { safeError } from "@/lib/api-error";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -28,10 +29,6 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ recipe: result });
   } catch (err) {
-    console.error("[adjust] error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Adjust failed" },
-      { status: 500 },
-    );
+    return safeError("adjust", err, 500, "Couldn't adjust the recipe.");
   }
 }

@@ -5,6 +5,7 @@ import {
   deleteSavedRecipe,
 } from "@/lib/db";
 import { recipeSchema, beanInfoSchema } from "@/lib/recipe-schema";
+import { safeError } from "@/lib/api-error";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -18,12 +19,16 @@ const updateBody = z.object({
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: Ctx) {
-  const { id } = await params;
-  const recipe = await getSavedRecipe(id);
-  if (!recipe) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  try {
+    const { id } = await params;
+    const recipe = await getSavedRecipe(id);
+    if (!recipe) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    return NextResponse.json({ recipe });
+  } catch (err) {
+    return safeError("recipes:get", err, 500, "Couldn't load the recipe.");
   }
-  return NextResponse.json({ recipe });
 }
 
 export async function PATCH(req: NextRequest, { params }: Ctx) {
@@ -42,11 +47,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     }
     return NextResponse.json({ recipe: updated });
   } catch (err) {
-    console.error("[recipes:update] error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to update" },
-      { status: 500 },
-    );
+    return safeError("recipes:update", err, 500, "Couldn't update the recipe.");
   }
 }
 
@@ -59,10 +60,6 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
     }
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[recipes:delete] error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to delete" },
-      { status: 500 },
-    );
+    return safeError("recipes:delete", err, 500, "Couldn't delete the recipe.");
   }
 }
