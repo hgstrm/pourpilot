@@ -1,7 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="112" fill="#1a1714"/>
-  <circle cx="256" cy="186" r="92" fill="none" stroke="#c9a36b" stroke-width="20"/>
-  <path d="M256 132 C256 132 220 168 220 200 a36 36 0 0 0 72 0 C292 168 256 132 256 132 Z" fill="#8fb98a"/>
-  <path d="M168 300 L344 300 L300 392 a40 40 0 0 1 -36 24 L248 416 a40 40 0 0 1 -36 -24 Z" fill="#c9a36b"/>
-  <path d="M256 416 L256 452" stroke="#8fb98a" stroke-width="16" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#241d18"/>
+      <stop offset="1" stop-color="#171210"/>
+    </linearGradient>
+    <linearGradient id="bean" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e3b576"/>
+      <stop offset="1" stop-color="#b8843a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- tile -->
+  <rect width="512" height="512" rx="116" fill="url(#tile)"/>
+
+  <!-- coffee bean, centered & tilted -->
+  <g transform="rotate(-18 256 256)">
+    <ellipse cx="256" cy="256" rx="132" ry="176" fill="url(#bean)"/>
+    <!-- center seam runs down the middle of the bean -->
+    <path d="M256 96 C214 176 214 336 256 416"
+          fill="none" stroke="#1c1612" stroke-width="30" stroke-linecap="round"/>
+  </g>
+
+  <!-- AI sparkle, top-right -->
+  <path d="M388 120
+           C390 148 401 159 429 161
+           C401 163 390 174 388 202
+           C386 174 375 163 347 161
+           C375 159 386 148 388 120 Z"
+        fill="#8fb98a"/>
 </svg>
