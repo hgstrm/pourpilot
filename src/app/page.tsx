@@ -169,14 +169,8 @@ export default function Home() {
       <header className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/icon.svg"
-            alt=""
-            className="size-8 rounded-[7px] -translate-y-px"
-          />
-          <h1 className="text-xl font-bold tracking-tight leading-none">
-            Beanerator
-          </h1>
+          <img src="/icon.svg" alt="" className="size-8 rounded-[7px]" />
+          <h1 className="text-xl font-bold tracking-tight">Beanerator</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm" className="rounded-full">
