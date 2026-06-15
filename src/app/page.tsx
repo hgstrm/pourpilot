@@ -244,7 +244,7 @@ export default function Home() {
             <label className="flex min-h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-[1.5px] border-dashed bg-secondary/50 p-8 text-center transition-colors hover:border-primary hover:bg-secondary">
               <Camera className="size-7 text-primary" />
               <span className="font-semibold">
-                {images.length === 0 ? "Snap your bean bag" : "Add another photo"}
+                {images.length === 0 ? "Snap your beans" : "Add another photo"}
               </span>
               <span className="text-sm text-muted-foreground">
                 {images.length === 0
@@ -286,7 +286,7 @@ export default function Home() {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={image}
-              alt="bean bag"
+              alt="coffee bag"
               className="max-h-72 w-full rounded-lg border object-contain bg-black"
             />
           )}
@@ -304,7 +304,7 @@ export default function Home() {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={image}
-              alt="bean bag"
+              alt="coffee bag"
               className="max-h-72 w-full rounded-xl border object-contain bg-black"
             />
           )}
