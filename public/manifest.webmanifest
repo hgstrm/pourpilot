@@ -1,6 +1,6 @@
 {
-  "name": "AnyBean",
-  "short_name": "AnyBean",
+  "name": "Beanerator",
+  "short_name": "Beanerator",
   "description": "Snap a photo of any coffee bag and get an AI pour-over recipe, sent straight to your xBloom.",
   "start_url": "/",
   "display": "standalone",

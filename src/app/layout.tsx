@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AnyBean — snap a bag, get a recipe",
+  title: "Beanerator — snap a bag, get a recipe",
   description:
     "Snap a photo of any coffee bag and get an AI pour-over recipe, sent straight to your xBloom.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "AnyBean",
+    title: "Beanerator",
   },
 };
 

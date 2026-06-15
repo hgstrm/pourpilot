@@ -1,4 +1,4 @@
-# ☕ AnyBean for xBloom
+# ☕ Beanerator
 
 Snap a photo of a coffee bag, let AI read the label (and look the bean up
 online), design a pour-over recipe, and send it **straight to your
@@ -38,7 +38,7 @@ Phone-first. Built to use standing next to the machine.
 This is a **self-hosted template**: you run your own copy with your own
 accounts. Your xBloom credentials live only in your deployment.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fhgstrm%2Fanybean&env=XBLOOM_EMAIL,XBLOOM_PASSWORD,AI_GATEWAY_API_KEY&envDescription=xBloom%20login%20and%20a%20Vercel%20AI%20Gateway%20key&envLink=https%3A%2F%2Fgithub.com%2Fhgstrm%2Fanybean%23environment-variables&project-name=anybean&repository-name=anybean)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fhgstrm%2Fbeanerator&env=XBLOOM_EMAIL,XBLOOM_PASSWORD,AI_GATEWAY_API_KEY&envDescription=xBloom%20login%20and%20a%20Vercel%20AI%20Gateway%20key&envLink=https%3A%2F%2Fgithub.com%2Fhgstrm%2Fbeanerator%23environment-variables&project-name=beanerator&repository-name=beanerator)
 
 Then, in your new Vercel project:
 
@@ -58,8 +58,8 @@ Then, in your new Vercel project:
 Requires Node 20+ and [pnpm](https://pnpm.io).
 
 ```bash
-git clone https://github.com/hgstrm/anybean.git
-cd anybean
+git clone https://github.com/hgstrm/beanerator.git
+cd beanerator
 pnpm install
 cp .env.example .env.local   # fill in the values (see below)
 pnpm dev
