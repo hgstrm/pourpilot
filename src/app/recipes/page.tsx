@@ -28,7 +28,8 @@ export default function RecipesPage() {
     <main className="app-wrap">
       <header className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
-          <span className="size-3 rounded-full bg-primary shadow-[0_0_16px_var(--primary)]" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.svg" alt="" className="size-7 rounded-lg" />
           <h1 className="text-xl font-bold tracking-tight">Saved recipes</h1>
         </div>
         <div className="flex items-center gap-2">
