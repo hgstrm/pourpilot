@@ -224,6 +224,54 @@ export async function listRecipes(
   }));
 }
 
+export interface RecipeFull extends RecipeSummary {
+  pours: Pour[];
+}
+
+const PATTERN_REV: Record<number, PourPattern> = {
+  1: "centered",
+  2: "spiral",
+  3: "circular",
+};
+
+/** List recipes WITH full pour data — used to import them into this app. */
+export async function listRecipesFull(
+  creds: XbloomCredentials,
+): Promise<RecipeFull[]> {
+  const resp = await postEncrypted("tuMyTeaRecipeCreated.tuhtml", {
+    ...authBase(creds),
+    pageNumber: 1,
+    countPerPage: 100,
+    adaptedModel: 1,
+  });
+  if (resp.result !== "success") {
+    throw new XbloomError("Failed to list recipes (session may be expired)");
+  }
+  const list = (resp.list as Record<string, unknown>[]) || [];
+  return list.map((r) => {
+    const rawPours = (r.pourList as Record<string, unknown>[]) || [];
+    const pours: Pour[] = rawPours.map((p) => ({
+      volumeMl: Number(p.volume ?? 30),
+      temperatureC: Number(p.temperature ?? 93),
+      pattern: PATTERN_REV[Number(p.pattern ?? 2)] ?? "spiral",
+      flowRate: Number(p.flowRate ?? 3.2),
+      pauseSeconds: Number(p.pausing ?? 0),
+      agitateBefore: Number(p.isEnableVibrationBefore) === 1,
+      agitateAfter: Number(p.isEnableVibrationAfter) === 1,
+    }));
+    return {
+      id: r.tableId as number,
+      name: r.theName as string,
+      doseG: r.dose as number,
+      ratio: r.grandWater as number,
+      grindSize: r.grinderSize as number,
+      rpm: r.rpm as number,
+      shareUrl: r.shareRecipeLink as string | undefined,
+      pours,
+    };
+  });
+}
+
 /**
  * Update an existing recipe in place (re-push edits to the machine/app).
  * Pass the full recipe; the xBloom id of the recipe to overwrite is `recipeId`.

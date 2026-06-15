@@ -1,16 +1,18 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import type { AnalysisResult, BeanInfo, RecipeOutput } from "@/lib/recipe-schema";
 import { RecipeEditor } from "@/components/RecipeEditor";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { haptics } from "@/lib/haptics";
 
 type Stage = "capture" | "analyzing" | "review";
 type Toast = { kind: "ok" | "err"; msg: string; href?: string } | null;
 
 export default function Home() {
   const [stage, setStage] = useState<Stage>("capture");
-  const [image, setImage] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [bean, setBean] = useState<BeanInfo | null>(null);
   const [recipe, setRecipe] = useState<RecipeOutput | null>(null);
   const [reasoning, setReasoning] = useState<string>("");
@@ -22,11 +24,21 @@ export default function Home() {
   const [searched, setSearched] = useState(false);
   const [url, setUrl] = useState("");
   const [details, setDetails] = useState("");
-  const fileRef = useRef<HTMLInputElement>(null);
 
-  async function onFile(file: File) {
+  const image = images[0] ?? null;
+
+  async function addPhoto(file: File) {
     const dataUrl = await fileToDataUrl(file);
-    setImage(dataUrl);
+    setImages((imgs) => [...imgs, dataUrl].slice(0, 3));
+    haptics.light();
+  }
+
+  function removePhoto(i: number) {
+    setImages((imgs) => imgs.filter((_, idx) => idx !== i));
+  }
+
+  async function analyze() {
+    if (images.length === 0) return;
     setToast(null);
     setStage("analyzing");
     try {
@@ -34,7 +46,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          image: dataUrl,
+          images,
           search: forceSearch || undefined,
           url: url.trim() || undefined,
           details: details.trim() || undefined,
@@ -51,8 +63,10 @@ export default function Home() {
       setReasoning(result.recipe.reasoning);
       setSources(result.sources ?? []);
       setSearched(Boolean(result.searched));
+      haptics.success();
       setStage("review");
     } catch (e) {
+      haptics.warn();
       setToast({ kind: "err", msg: errMsg(e) });
       setStage("capture");
     }
@@ -130,7 +144,7 @@ export default function Home() {
 
   function reset() {
     setStage("capture");
-    setImage(null);
+    setImages([]);
     setBean(null);
     setRecipe(null);
     setSavedId(null);
@@ -148,9 +162,12 @@ export default function Home() {
           <span className="dot" />
           <h1>Bean → Brew</h1>
         </div>
-        <Link href="/recipes" className="nav-link">
-          Saved
-        </Link>
+        <div className="row" style={{ gap: 8 }}>
+          <Link href="/recipes" className="nav-link">
+            Saved
+          </Link>
+          <ThemeToggle />
+        </div>
       </div>
 
       {toast && (
@@ -199,26 +216,64 @@ export default function Home() {
             </label>
           </div>
 
-          <label className="dropzone">
-            <span className="big">📷 Snap your bean bag</span>
-            <span className="small">
-              Tap to take a photo or choose from your library
-            </span>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) onFile(f);
-              }}
-            />
-          </label>
+          {images.length > 0 && (
+            <div className="thumbs">
+              {images.map((img, i) => (
+                <div className="thumb" key={i}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`bag ${i + 1}`} />
+                  <button
+                    className="thumb-x"
+                    aria-label="Remove photo"
+                    onClick={() => removePhoto(i)}
+                  >
+                    ×
+                  </button>
+                  <span className="thumb-tag">
+                    {i === 0 ? "Front" : i === 1 ? "Back" : `#${i + 1}`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {images.length < 3 && (
+            <label className="dropzone">
+              <span className="big">
+                📷 {images.length === 0 ? "Snap your bean bag" : "Add another photo"}
+              </span>
+              <span className="small">
+                {images.length === 0
+                  ? "Tap for the front — add the back too for more detail"
+                  : "e.g. the back of the bag with origin & process"}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) addPhoto(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+          )}
+
+          {images.length > 0 && (
+            <button
+              className="btn-primary"
+              style={{ marginTop: 14 }}
+              onClick={analyze}
+            >
+              ✨ Analyze {images.length > 1 ? `${images.length} photos` : "photo"}
+            </button>
+          )}
+
           <p className="total" style={{ textAlign: "center" }}>
-            Add a product link or notes if you have them, then snap the bag.
-            The AI reads the label, looks up details when needed, and designs a
-            pour-over you can tweak and send to your machine.
+            Add a product link or notes if you have them, snap the front (and
+            back) of the bag, then analyze. The AI reads the label, looks up
+            details when needed, and designs a pour-over you can tweak and send.
           </p>
         </>
       )}

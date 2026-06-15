@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { SavedRecipeDTO } from "@/lib/client-types";
 import { targetWater } from "@/lib/client-types";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState<SavedRecipeDTO[] | null>(null);
@@ -26,9 +27,15 @@ export default function RecipesPage() {
           <span className="dot" />
           <h1>Saved recipes</h1>
         </div>
-        <Link href="/" className="nav-link">
-          + New
-        </Link>
+        <div className="row" style={{ gap: 8 }}>
+          <Link href="/import" className="nav-link">
+            Import
+          </Link>
+          <Link href="/" className="nav-link">
+            + New
+          </Link>
+          <ThemeToggle />
+        </div>
       </div>
 
       {error && <div className="toast err">{error}</div>}

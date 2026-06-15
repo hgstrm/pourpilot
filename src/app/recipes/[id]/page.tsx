@@ -6,6 +6,10 @@ import Link from "next/link";
 import type { RecipeOutput } from "@/lib/recipe-schema";
 import type { SavedRecipeDTO } from "@/lib/client-types";
 import { RecipeEditor } from "@/components/RecipeEditor";
+import { AdjustBar } from "@/components/AdjustBar";
+import { BrewLog } from "@/components/BrewLog";
+import { PushConfirm } from "@/components/PushConfirm";
+import { haptics } from "@/lib/haptics";
 
 type Toast = { kind: "ok" | "err"; msg: string } | null;
 
@@ -14,9 +18,12 @@ export default function RecipeDetail() {
   const router = useRouter();
   const [saved, setSaved] = useState<SavedRecipeDTO | null>(null);
   const [recipe, setRecipe] = useState<RecipeOutput | null>(null);
+  // Snapshot of what's currently on xBloom (for the diff). Set after load/push.
+  const [pushedRecipe, setPushedRecipe] = useState<RecipeOutput | null>(null);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<Toast>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     fetch(`/api/recipes/${id}`)
@@ -26,6 +33,7 @@ export default function RecipeDetail() {
         else {
           setSaved(d.recipe);
           setRecipe(d.recipe.recipe);
+          if (d.recipe.xbloomId) setPushedRecipe(d.recipe.recipe);
         }
       })
       .catch((e) => setError(String(e)));
@@ -44,6 +52,7 @@ export default function RecipeDetail() {
       const d = await res.json();
       if (!res.ok) throw new Error(d.error);
       setSaved(d.recipe);
+      haptics.success();
       setToast({ kind: "ok", msg: "Saved." });
     } catch (e) {
       setToast({ kind: "err", msg: errMsg(e) });
@@ -52,7 +61,7 @@ export default function RecipeDetail() {
     }
   }
 
-  async function push() {
+  async function doPush() {
     if (!recipe) return;
     setBusy(true);
     setToast(null);
@@ -64,16 +73,20 @@ export default function RecipeDetail() {
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error);
+      haptics.success();
+      setPushedRecipe(recipe);
+      setConfirming(false);
       setToast({
         kind: "ok",
         msg: d.updated
           ? "Updated on your xBloom — open the app to brew."
           : "Sent to your xBloom — open the app to brew!",
       });
-      // refresh to pick up xbloomId
       const r2 = await fetch(`/api/recipes/${id}`).then((x) => x.json());
       if (r2.recipe) setSaved(r2.recipe);
     } catch (e) {
+      haptics.warn();
+      setConfirming(false);
       setToast({ kind: "err", msg: errMsg(e) });
     } finally {
       setBusy(false);
@@ -105,10 +118,11 @@ export default function RecipeDetail() {
   if (!saved || !recipe) {
     return (
       <main className="wrap">
-        <p style={{ textAlign: "center" }}>
-          <span className="spinner" style={{ borderTopColor: "#c9a36b" }} />
-          Loading…
-        </p>
+        <div className="card skeleton-card">
+          <div className="skeleton skeleton-line" style={{ width: "60%" }} />
+          <div className="skeleton skeleton-line" style={{ width: "40%" }} />
+          <div className="skeleton skeleton-block" />
+        </div>
       </main>
     );
   }
@@ -153,22 +167,43 @@ export default function RecipeDetail() {
         </div>
       )}
 
+      <AdjustBar
+        recipe={recipe}
+        bean={saved.bean}
+        onAdjusted={(next, note) => {
+          setRecipe(next);
+          setToast({ kind: "ok", msg: note });
+        }}
+        onError={(msg) => setToast({ kind: "err", msg })}
+      />
+
       <RecipeEditor recipe={recipe} onChange={setRecipe} />
+
+      <BrewLog recipeId={id} currentRecipe={recipe} />
 
       <div className="actionbar">
         <button className="btn-primary" onClick={save} disabled={busy}>
           Save
         </button>
-        <button className="btn-push" onClick={push} disabled={busy}>
-          {busy ? (
-            <span className="spinner" />
-          ) : saved.xbloomId ? (
-            "Update xBloom"
-          ) : (
-            "Send to xBloom"
-          )}
+        <button
+          className="btn-push"
+          onClick={() => setConfirming(true)}
+          disabled={busy}
+        >
+          {saved.xbloomId ? "Update xBloom" : "Send to xBloom"}
         </button>
       </div>
+
+      {confirming && (
+        <PushConfirm
+          next={recipe}
+          previous={pushedRecipe}
+          isUpdate={Boolean(saved.xbloomId)}
+          busy={busy}
+          onConfirm={doPush}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
     </main>
   );
 }

@@ -6,17 +6,23 @@ export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
-    const { image, dose, search, url, details } = (await req.json()) as {
-      image?: string;
-      dose?: number;
-      search?: boolean;
-      url?: string;
-      details?: string;
-    };
+    const { image, images, dose, search, url, details } =
+      (await req.json()) as {
+        image?: string;
+        images?: string[];
+        dose?: number;
+        search?: boolean;
+        url?: string;
+        details?: string;
+      };
 
-    if (!image || !image.startsWith("data:image/")) {
+    const list = (images && images.length ? images : image ? [image] : [])
+      .filter((i): i is string => typeof i === "string")
+      .filter((i) => i.startsWith("data:image/"));
+
+    if (list.length === 0) {
       return NextResponse.json(
-        { error: "Provide an image as a data URL (data:image/...)" },
+        { error: "Provide at least one image as a data URL (data:image/...)" },
         { status: 400 },
       );
     }
@@ -24,7 +30,7 @@ export async function POST(req: NextRequest) {
     const cleanUrl = url?.trim() ? url.trim() : undefined;
     const cleanDetails = details?.trim() ? details.trim() : undefined;
 
-    const result = await analyzeBeanImage(image, {
+    const result = await analyzeBeanImage(list, {
       dose,
       search,
       url: cleanUrl,

@@ -8,11 +8,7 @@ import {
   type BeanInfo,
   type RecipeOutput,
 } from "./recipe-schema";
-
-// Models are specified as plain "provider/model" strings, which the AI SDK
-// routes through the Vercel AI Gateway (AI_GATEWAY_API_KEY).
-// Override with AI_MODEL env if you want a different model.
-const MODEL = process.env.AI_MODEL || "openai/gpt-4o";
+import { MODEL, withRetry } from "./ai";
 
 const READ_PROMPT = `You are reading a photo of a coffee bag.
 Extract ONLY what is actually printed/visible on the bag: name, roaster, origin, process, varietal, roast level, tasting notes.
@@ -48,22 +44,30 @@ function isSparse(bean: BeanInfo): boolean {
   return missing || fewNotes;
 }
 
-/** Pass 1: read what's actually on the bag. */
-async function readBag(imageDataUrl: string): Promise<BeanInfo> {
-  const { object } = await generateObject({
-    model: MODEL,
-    schema: beanInfoSchema,
-    system: READ_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: [
-          { type: "text", text: "Read this coffee bag." },
-          { type: "image", image: imageDataUrl },
-        ],
-      },
-    ],
-  });
+/** Pass 1: read what's actually on the bag (one or more photos). */
+async function readBag(imageDataUrls: string[]): Promise<BeanInfo> {
+  const intro =
+    imageDataUrls.length > 1
+      ? "Read this coffee bag. Multiple photos of the same bag are provided (e.g. front and back) — combine details from all of them."
+      : "Read this coffee bag.";
+  const { object } = await withRetry(() =>
+    generateObject({
+      model: MODEL,
+      schema: beanInfoSchema,
+      system: READ_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: intro },
+            ...imageDataUrls.map(
+              (img) => ({ type: "image", image: img }) as const,
+            ),
+          ],
+        },
+      ],
+    }),
+  );
   return object;
 }
 
@@ -94,16 +98,18 @@ ${JSON.stringify(bean, null, 2)}
 Search the web (prefer the roaster's product page) and tell me the origin/region, process, varietal, roast level, and the roaster's published tasting notes. Cite what you find.`;
 
   // STEP A: search the web (plain text answer so the tool actually runs).
-  const search = await generateText({
-    model: MODEL,
-    system: RESEARCH_PROMPT,
-    prompt: task,
-    tools: {
-      web_search: openai.tools.webSearch({ searchContextSize: "medium" }),
-    },
-    toolChoice: { type: "tool", toolName: "web_search" },
-    stopWhen: stepCountIs(4),
-  });
+  const search = await withRetry(() =>
+    generateText({
+      model: MODEL,
+      system: RESEARCH_PROMPT,
+      prompt: task,
+      tools: {
+        web_search: openai.tools.webSearch({ searchContextSize: "medium" }),
+      },
+      toolChoice: { type: "tool", toolName: "web_search" },
+      stopWhen: stepCountIs(4),
+    }),
+  );
 
   // Instrumentation: prove whether search actually happened.
   const calls = search.steps.flatMap((s) => s.toolCalls ?? []);
@@ -118,13 +124,15 @@ Search the web (prefer the roaster's product page) and tell me the origin/region
   if (!search.text) return { bean, sources, searched: calls.length > 0 };
 
   // STEP B: turn the researched prose into structured BeanInfo (no tools here).
-  const { object: found } = await generateObject({
-    model: MODEL,
-    schema: beanInfoSchema,
-    system:
-      "Convert the research notes into structured bean info. Only include facts present in the notes; otherwise null.",
-    prompt: `Original bag read:\n${JSON.stringify(bean, null, 2)}\n\nResearch notes:\n${search.text}`,
-  });
+  const { object: found } = await withRetry(() =>
+    generateObject({
+      model: MODEL,
+      schema: beanInfoSchema,
+      system:
+        "Convert the research notes into structured bean info. Only include facts present in the notes; otherwise null.",
+      prompt: `Original bag read:\n${JSON.stringify(bean, null, 2)}\n\nResearch notes:\n${search.text}`,
+    }),
+  );
 
   return {
     bean: mergeBean(bean, found),
@@ -186,15 +194,17 @@ async function designRecipe(
     ? `\n\nIMPORTANT — the user added these notes/preferences; honor them:\n"""${hints.details}"""`
     : "";
 
-  const { object } = await generateObject({
-    model: MODEL,
-    schema: recipeSchema,
-    system: RECIPE_PROMPT,
-    prompt: `Bean info:
+  const { object } = await withRetry(() =>
+    generateObject({
+      model: MODEL,
+      schema: recipeSchema,
+      system: RECIPE_PROMPT,
+      prompt: `Bean info:
 ${JSON.stringify(bean, null, 2)}
 
 ${doseLine}${detailsLine}`,
-  });
+    }),
+  );
   return object;
 }
 
@@ -204,7 +214,7 @@ export type AnalyzeResponse = AnalysisResult & {
 };
 
 export async function analyzeBeanImage(
-  imageDataUrl: string,
+  images: string | string[],
   hints?: {
     dose?: number;
     search?: boolean;
@@ -212,8 +222,10 @@ export async function analyzeBeanImage(
     details?: string;
   },
 ): Promise<AnalyzeResponse> {
-  // Pass 1 — read the bag.
-  let bean = await readBag(imageDataUrl);
+  const imageList = Array.isArray(images) ? images : [images];
+
+  // Pass 1 — read the bag (front + back if provided).
+  let bean = await readBag(imageList);
 
   // Pass 2 — enrich via web search. A product URL always triggers research;
   // otherwise only when the bag is sparse (or explicitly requested).
