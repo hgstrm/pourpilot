@@ -1,70 +1,133 @@
-# xBloom Recipe Maker
+# ☕ Bean → Brew — xBloom Recipe Maker
 
-Snap a photo of a coffee bag → AI reads the label and designs a pour-over recipe
-→ tweak it → send it straight to your **xBloom Studio** (it appears in the
-xBloom iOS app, ready to brew). Save recipes, edit them later, and re-push
-changes in place.
+Snap a photo of a coffee bag, let AI read the label (and look the bean up
+online), design a pour-over recipe, and send it **straight to your
+[xBloom Studio](https://xbloom.com)** — it appears in the xBloom app, ready to
+brew. Save recipes, log how each brew tasted, and let the AI dial them in.
 
-Phone-first UI — built to use standing next to the machine.
+Phone-first. Built to use standing next to the machine.
 
-## How it works
+> **Unofficial project — not affiliated with xBloom.** It uses a community
+> reverse-engineered API that may break at any time. Please read
+> [DISCLAIMER.md](./DISCLAIMER.md) before using.
 
-1. **Capture** — take/upload a photo of the bean bag.
-2. **Analyze** (`/api/analyze`) — a vision model (via **Vercel AI Gateway**)
-   extracts bean info (origin, process, roast, notes) and designs a recipe
-   using brewing science, returned as validated structured output.
-3. **Review & tweak** — adjust dose, ratio, grind, RPM, and each pour.
-4. **Save** — stored in **Neon Postgres**.
-5. **Send to xBloom** (`/api/push`) — logs into the xBloom cloud API with your
-   account (server-side, env-only), RSA-encrypts the payload, and creates the
-   recipe. Re-pushing a saved recipe **edits it in place** on xBloom.
+---
 
-The xBloom client (`src/lib/xbloom/client.ts`) talks to the same private API
-the xBloom app uses. Credit for the reverse-engineering:
-[github.com/denull0/xbloom-agent](https://github.com/denull0/xbloom-agent).
+## ✨ Features
 
-## Local development
+- **📷 Photo → recipe** — vision model reads the bag (front + back), designs a
+  pour-over tailored to the beans using brewing science.
+- **🔎 Smart lookup** — sparse bag? Paste the product URL or let it search the
+  web for the roaster's origin/process/notes. Sources are shown so you can
+  verify.
+- **📝 Your notes** — tell the AI your preferences ("brighter, 18g dose").
+- **☕ One-tap to xBloom** — recipe syncs to your xBloom app instantly. Edits
+  re-push in place.
+- **🧠 Taste feedback loop** — "too bitter / sour / weak" → AI adjusts grind,
+  temp, and ratio using real extraction theory. One-tap "brighter / sweeter"
+  variations too.
+- **📖 Brew log** — rate each brew and keep tasting notes per recipe.
+- **📥 Import** — pull recipes already on your xBloom account in to tweak.
+- **🎨 Light & dark** — light by default, toggle persisted.
+- **📱 PWA** — Add to Home Screen for an app-like feel.
+
+---
+
+## 🚀 Quick start (self-host)
+
+This is a **self-hosted template**: you run your own copy with your own
+accounts. Your xBloom credentials live only in your deployment.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fhgstrm%2Fxbloom-recipe-maker&env=XBLOOM_EMAIL,XBLOOM_PASSWORD,AI_GATEWAY_API_KEY&envDescription=xBloom%20login%20and%20a%20Vercel%20AI%20Gateway%20key&envLink=https%3A%2F%2Fgithub.com%2Fhgstrm%2Fxbloom-recipe-maker%23environment-variables&project-name=xbloom-recipe-maker&repository-name=xbloom-recipe-maker)
+
+Then, in your new Vercel project:
+
+1. **Storage → Neon** — add the Neon integration. It sets `DATABASE_URL`
+   automatically. (Tables are created on first use.)
+2. **AI Gateway** — enable it and add `AI_GATEWAY_API_KEY` (used for the vision
+   model + web search). Make sure the gateway has credits.
+3. Confirm `XBLOOM_EMAIL` and `XBLOOM_PASSWORD` are set.
+4. **Settings → Deployment Protection → On.** ⚠️ Important: this keeps your
+   deployment private to you. Anyone who can reach the app brews into *your*
+   xBloom account.
+
+---
+
+## 🛠️ Local development
+
+Requires Node 20+ and [pnpm](https://pnpm.io).
 
 ```bash
+git clone https://github.com/hgstrm/xbloom-recipe-maker.git
+cd xbloom-recipe-maker
 pnpm install
-cp .env.example .env.local   # fill in the values below
+cp .env.example .env.local   # fill in the values (see below)
 pnpm dev
 ```
 
-### Test the xBloom push path on its own
+Open http://localhost:3000.
+
+### Verify the xBloom connection on its own
 
 ```bash
-pnpm xbloom:test                 # pushes a sample recipe, lists to confirm
+pnpm xbloom:test                  # pushes a sample recipe, lists to confirm
 XBLOOM_CLEANUP=1 pnpm xbloom:test # same, then deletes the test recipe
 ```
 
-## Environment variables
+---
+
+## 🔑 Environment variables
 
 | Var | Required | What |
 | --- | --- | --- |
 | `XBLOOM_EMAIL` | yes | Your xBloom account email (server-side only) |
 | `XBLOOM_PASSWORD` | yes | Your xBloom account password (server-side only) |
-| `AI_GATEWAY_API_KEY` | yes | Vercel AI Gateway key for the vision model |
-| `AI_MODEL` | no | Model id, default `openai/gpt-4o` |
+| `AI_GATEWAY_API_KEY` | yes | [Vercel AI Gateway](https://vercel.com/ai-gateway) key (vision + web search) |
 | `DATABASE_URL` | yes | Neon Postgres connection string (or `POSTGRES_URL`) |
+| `AI_MODEL` | no | Model id, default `openai/gpt-4o` (must support vision + web search) |
 
-The Neon `recipes` table is created automatically on first use.
+Credentials are used **server-side only** — the browser never sees your xBloom
+password, and it's never written to the database.
 
-## Deploy to Vercel
+---
 
-1. Push this repo to GitHub and import it in Vercel.
-2. **Storage → Neon**: add the Neon integration. It sets `DATABASE_URL`
-   automatically.
-3. **AI Gateway**: enable it / add `AI_GATEWAY_API_KEY` in project env vars.
-4. Add `XBLOOM_EMAIL` and `XBLOOM_PASSWORD` as env vars.
-5. **Settings → Deployment Protection**: turn it on so only you can reach the
-   app (your xBloom credentials live in server env and are never exposed to the
-   browser, but protection keeps the whole app private).
+## 🧩 How it works
 
-## Notes
+```
+photo(s) ─▶ /api/analyze ─▶ read bag (vision) ─▶ research (web search, if sparse)
+                                                       │
+                                                       ▼
+                                              design recipe (AI)
+                                                       │
+   review & tweak ◀──────────────────────────────────┘
+        │
+        ├─ save ─▶ Neon Postgres (recipes, brews)
+        └─ send ─▶ /api/push ─▶ xBloom cloud API (RSA-encrypted) ─▶ xBloom app
+```
 
-- Credentials are used **server-side only** — the browser never sees your
-  xBloom password.
-- "Send to xBloom" logs in fresh each push (no token stored). Simple and safe
-  for a single-user, protected deployment.
-- Deleting a saved recipe here does **not** delete it from your xBloom app.
+- **Framework:** Next.js (App Router) + TypeScript, deployed on Vercel.
+- **AI:** Vercel AI Gateway via the AI SDK; structured output validated with
+  Zod; native web search tool for bean lookups.
+- **Storage:** Neon serverless Postgres.
+- **xBloom client** (`src/lib/xbloom/client.ts`): logs in, RSA-encrypts the
+  payload, and creates/edits/lists/deletes recipes.
+
+---
+
+## 🙏 Credits
+
+The xBloom API integration is based on the reverse-engineering work in
+[**denull0/xbloom-agent**](https://github.com/denull0/xbloom-agent) — huge
+thanks. Go star it.
+
+---
+
+## 🤝 Contributing
+
+Issues and PRs welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). Be kind
+([Code of Conduct](./CODE_OF_CONDUCT.md)).
+
+## 📄 License
+
+[MIT](./LICENSE) · See [DISCLAIMER.md](./DISCLAIMER.md) for important notes
+about the unofficial xBloom API.
