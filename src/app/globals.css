@@ -87,15 +87,21 @@
 
   html {
     font-size: 17px; /* readable at arm's length */
+    background-color: var(--background);
   }
 
   body {
     @apply bg-background text-foreground;
+    min-height: 100dvh;
+    /* Fixed glow so it always covers the viewport and never cuts off
+       below the content. */
     background-image: radial-gradient(
       900px 500px at 80% -10%,
       color-mix(in oklch, var(--primary) 12%, transparent) 0%,
       transparent 60%
     );
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     -webkit-font-smoothing: antialiased;
     overscroll-behavior-y: none;
   }
