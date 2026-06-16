@@ -9,6 +9,7 @@ import {
   type RecipeOutput,
 } from "./recipe-schema";
 import { MODEL, withRetry } from "./ai";
+import { normalizePours } from "./client-types";
 
 const READ_PROMPT = `You are reading a photo of a coffee bag.
 Extract ONLY what is actually printed/visible on the bag: name, roaster, origin, process, varietal, roast level, tasting notes.
@@ -244,8 +245,8 @@ export async function analyzeBeanImage(
     }
   }
 
-  // Pass 3 — design the recipe.
-  const recipe = await designRecipe(bean, hints);
+  // Pass 3 — design the recipe, then force pours to sum to dose × ratio.
+  const recipe = normalizePours(await designRecipe(bean, hints));
 
   // Validate the combined shape against the original schema.
   const result = analysisSchema.parse({ bean, recipe });

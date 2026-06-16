@@ -1,7 +1,12 @@
 "use client";
 
 import type { RecipeOutput } from "@/lib/recipe-schema";
-import { PATTERNS, totalWater, targetWater } from "@/lib/client-types";
+import {
+  PATTERNS,
+  totalWater,
+  targetWater,
+  normalizePours,
+} from "@/lib/client-types";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -112,20 +117,31 @@ export function RecipeEditor({
           />
         </div>
 
-        <p
-          className={cn(
-            "flex items-center gap-1.5 text-sm",
-            off ? "text-destructive" : "text-muted-foreground",
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p
+            className={cn(
+              "flex items-center gap-1.5 text-sm",
+              off ? "text-destructive" : "text-muted-foreground",
+            )}
+          >
+            {off ? (
+              <TriangleAlert className="size-4" />
+            ) : (
+              <Check className="size-4 text-accent" />
+            )}
+            Total water {total}ml · target {target}ml
+            {off && " — pours don't add up"}
+          </p>
+          {off && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onChange(normalizePours(recipe))}
+            >
+              Fix
+            </Button>
           )}
-        >
-          {off ? (
-            <TriangleAlert className="size-4" />
-          ) : (
-            <Check className="size-4 text-accent" />
-          )}
-          Total water {total}ml · target {target}ml
-          {off && " — pours don't sum to dose × ratio"}
-        </p>
+        </div>
       </Card>
 
       <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">

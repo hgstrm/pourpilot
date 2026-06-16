@@ -1,5 +1,6 @@
 import { generateObject } from "ai";
 import { MODEL, withRetry } from "./ai";
+import { normalizePours } from "./client-types";
 import {
   recipeSchema,
   beanInfoSchema,
@@ -65,7 +66,9 @@ Produce the improved full recipe and a short changeNote.`,
     }),
   );
 
-  return object as AdjustedRecipe;
+  // Force pours to sum to dose × ratio regardless of model drift.
+  const normalized = normalizePours(object as RecipeOutput);
+  return { ...normalized, changeNote: object.changeNote } as AdjustedRecipe;
 }
 
 // Preset one-tap remixes / feedback chips surfaced in the UI.

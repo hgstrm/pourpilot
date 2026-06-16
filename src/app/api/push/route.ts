@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { login, createRecipe, editRecipe } from "@/lib/xbloom/client";
 import type { CoffeeRecipe } from "@/lib/xbloom/types";
 import { recipeSchema } from "@/lib/recipe-schema";
+import { normalizePours } from "@/lib/client-types";
 import { getSavedRecipe, updateSavedRecipe } from "@/lib/db";
 import { safeError } from "@/lib/api-error";
 import { z } from "zod";
@@ -39,7 +40,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const r = parsed.data.recipe;
+    // Safety net: never push pours that don't sum to dose × ratio.
+    const r = normalizePours(parsed.data.recipe);
     const recipe: CoffeeRecipe = {
       name: r.name,
       doseG: r.doseG,
