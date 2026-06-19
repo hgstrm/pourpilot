@@ -10,6 +10,7 @@ import { RecipeEditor } from "@/components/RecipeEditor";
 import { AdjustBar } from "@/components/AdjustBar";
 import { BrewLog } from "@/components/BrewLog";
 import { PushConfirm } from "@/components/PushConfirm";
+import { ShareRecipe } from "@/components/ShareRecipe";
 import { haptics } from "@/lib/haptics";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ChevronLeft, Loader2, Trash2 } from "lucide-react";
+import { ChevronLeft, Loader2, Share2, Trash2 } from "lucide-react";
 
 export default function RecipeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +35,7 @@ export default function RecipeDetail() {
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     fetch(`/api/recipes/${id}`)
@@ -146,14 +148,25 @@ export default function RecipeDetail() {
             <ChevronLeft className="size-4" /> Back
           </Link>
         </Button>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => setDeleteOpen(true)}
-          disabled={busy}
-        >
-          <Trash2 className="size-4" /> Delete
-        </Button>
+        <div className="flex items-center gap-2">
+          {saved.shareUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShareOpen(true)}
+            >
+              <Share2 className="size-4" /> Share
+            </Button>
+          )}
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setDeleteOpen(true)}
+            disabled={busy}
+          >
+            <Trash2 className="size-4" /> Delete
+          </Button>
+        </div>
       </header>
 
       <div className="flex flex-col gap-4">
@@ -246,6 +259,15 @@ export default function RecipeDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {saved.shareUrl && (
+        <ShareRecipe
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          shareUrl={saved.shareUrl}
+          recipeName={recipe.name}
+        />
+      )}
     </main>
   );
 }

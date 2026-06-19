@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils";
 
 type Pour = RecipeOutput["pours"][number];
 
+const RATIO_PRESETS: number[] = [14, 15, 15.5, 16, 17];
+
 export function RecipeEditor({
   recipe,
   onChange,
@@ -115,6 +117,24 @@ export function RecipeEditor({
             step={10}
             onChange={(v) => set("grindRpm", Math.round(v))}
           />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-muted-foreground mr-0.5">Ratio</span>
+          {RATIO_PRESETS.map((r) => (
+            <Button
+              key={r}
+              variant={recipe.ratio === r ? "default" : "secondary"}
+              size="sm"
+              className="rounded-full h-8 px-3 text-xs"
+              onClick={() => {
+                const updated = { ...recipe, ratio: r };
+                onChange(normalizePours(updated));
+              }}
+            >
+              1:{r}
+            </Button>
+          ))}
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">

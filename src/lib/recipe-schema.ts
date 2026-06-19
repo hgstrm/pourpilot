@@ -7,9 +7,10 @@ import { z } from "zod";
 export const pourSchema = z.object({
   volumeMl: z
     .number()
+    .int()
     .min(5)
     .max(500)
-    .describe("Water added during THIS pour only (ml), not cumulative"),
+    .describe("Integer ml of water added during THIS pour only, not cumulative"),
   temperatureC: z
     .number()
     .min(40)
@@ -30,20 +31,32 @@ export const pourSchema = z.object({
 });
 
 export const beanInfoSchema = z.object({
-  name: z.string().describe("Coffee name as printed on the bag"),
-  roaster: z.string().nullable().describe("Roaster / brand if visible"),
-  origin: z.string().nullable().describe("Country / region of origin"),
+  name: z
+    .string()
+    .nullable()
+    .describe("Coffee name if available from the current source; otherwise null"),
+  roaster: z
+    .string()
+    .nullable()
+    .describe("Roaster / brand if available from the current source; otherwise null"),
+  origin: z
+    .string()
+    .nullable()
+    .describe("Country / region of origin if available; otherwise null"),
   process: z
     .string()
     .nullable()
-    .describe("Process: washed, natural, honey, anaerobic, etc."),
-  varietal: z.string().nullable().describe("Coffee varietal(s) if listed"),
+    .describe("Process if listed or confirmed: washed, natural, honey, anaerobic, etc.; otherwise null"),
+  varietal: z
+    .string()
+    .nullable()
+    .describe("Coffee varietal(s) if listed or confirmed; otherwise null"),
   roastLevel: z
     .enum(["light", "medium-light", "medium", "medium-dark", "dark", "unknown"])
-    .describe("Roast level (infer from label/notes if not explicit)"),
+    .describe("Roast level only when explicitly stated or shown on a visible roast scale; otherwise unknown"),
   tastingNotes: z
     .array(z.string())
-    .describe("Tasting notes printed on the bag"),
+    .describe("Printed or roaster-published tasting notes; empty array if unavailable"),
 });
 
 export const recipeSchema = z.object({
@@ -56,7 +69,7 @@ export const recipeSchema = z.object({
     .number()
     .min(12)
     .max(20)
-    .describe("Brew ratio (1:ratio). Total water = doseG * ratio"),
+    .describe("Numeric brew ratio, e.g. 16 for 1:16. Total water = doseG * ratio"),
   grindSize: z
     .number()
     .int()
@@ -73,11 +86,11 @@ export const recipeSchema = z.object({
     .array(pourSchema)
     .min(1)
     .max(6)
-    .describe("Ordered pours; the FIRST pour is the bloom"),
+    .describe("Ordered incremental pours; the FIRST pour is the bloom"),
   reasoning: z
     .string()
     .describe(
-      "1-3 sentences explaining the brewing choices for these specific beans",
+      "1-3 sentences explaining the brewing choices. Acknowledge sparse bean info when relevant instead of inventing certainty",
     ),
 });
 
