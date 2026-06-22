@@ -1,7 +1,7 @@
 {
-  "name": "Beanerator",
-  "short_name": "Beanerator",
-  "description": "Snap a photo of any coffee bag and get an AI pour-over recipe, sent straight to your xBloom.",
+  "name": "PourPilot",
+  "short_name": "PourPilot",
+  "description": "An unofficial brewing companion for xBloom Studio.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f6f3ee",

@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  Beanerator theme — a warm specialty-coffee palette mapped onto shadcn tokens.
+  PourPilot theme — a warm specialty-coffee palette mapped onto shadcn tokens.
   Light is the default; dark mode via the `.dark` class (next-themes).
 */
 

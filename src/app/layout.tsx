@@ -4,13 +4,13 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Beanerator — snap a bag, get a recipe",
+  title: "PourPilot — dial in better coffee",
   description:
-    "Snap a photo of any coffee bag and get an AI pour-over recipe, sent straight to your xBloom.",
+    "An unofficial brewing companion for xBloom Studio.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Beanerator",
+    title: "PourPilot",
   },
 };
 

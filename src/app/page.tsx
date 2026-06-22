@@ -180,7 +180,7 @@ export default function Home() {
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icon.svg" alt="" className="size-8 rounded-[7px]" />
-          <h1 className="text-xl font-bold tracking-tight">Beanerator</h1>
+          <h1 className="text-xl font-bold tracking-tight">PourPilot</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button
