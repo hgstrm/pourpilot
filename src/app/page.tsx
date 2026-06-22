@@ -16,14 +16,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
   Camera,
+  Calculator,
+  Flame,
   Loader2,
   Plus,
   Search,
+  Snowflake,
   Sparkles,
   X,
 } from "lucide-react";
 
 type Stage = "capture" | "analyzing" | "review";
+type BrewMode = "hot" | "iced";
 
 export default function Home() {
   const [stage, setStage] = useState<Stage>("capture");
@@ -38,6 +42,9 @@ export default function Home() {
   const [searched, setSearched] = useState(false);
   const [url, setUrl] = useState("");
   const [details, setDetails] = useState("");
+  const [brewMode, setBrewMode] = useState<BrewMode>("hot");
+  const [brewWaterMl, setBrewWaterMl] = useState(150);
+  const [iceG, setIceG] = useState(100);
 
   const image = images[0] ?? null;
 
@@ -63,6 +70,9 @@ export default function Home() {
           search: forceSearch || undefined,
           url: url.trim() || undefined,
           details: details.trim() || undefined,
+          brewMode,
+          brewWaterMl: brewMode === "iced" ? brewWaterMl : undefined,
+          iceG: brewMode === "iced" ? iceG : undefined,
         }),
       });
       const data = await res.json();
@@ -173,6 +183,16 @@ export default function Home() {
           <h1 className="text-xl font-bold tracking-tight">Beanerator</h1>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            size="icon"
+            className="rounded-full"
+          >
+            <Link href="/cold-brew" aria-label="Cold brew calculator">
+              <Calculator className="size-4" />
+            </Link>
+          </Button>
           <Button asChild variant="outline" size="sm" className="rounded-full">
             <Link href="/recipes">Saved</Link>
           </Button>
@@ -183,6 +203,69 @@ export default function Home() {
       {stage === "capture" && (
         <div className="flex flex-col gap-4">
           <Card>
+            <div className="flex flex-col gap-2">
+              <Label>Brew style</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant={brewMode === "hot" ? "default" : "secondary"}
+                  className="justify-center"
+                  onClick={() => setBrewMode("hot")}
+                >
+                  <Flame className="size-4" />
+                  Hot
+                </Button>
+                <Button
+                  variant={brewMode === "iced" ? "default" : "secondary"}
+                  className="justify-center"
+                  onClick={() => setBrewMode("iced")}
+                >
+                  <Snowflake className="size-4" />
+                  Iced
+                </Button>
+              </div>
+            </div>
+
+            {brewMode === "iced" && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="brew-water">Brew water (ml)</Label>
+                  <Input
+                    id="brew-water"
+                    type="number"
+                    inputMode="decimal"
+                    min={40}
+                    max={500}
+                    step={5}
+                    value={brewWaterMl}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      if (!Number.isNaN(v)) setBrewWaterMl(v);
+                    }}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="ice-g">Ice (g)</Label>
+                  <Input
+                    id="ice-g"
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    max={500}
+                    step={5}
+                    value={iceG}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      if (!Number.isNaN(v)) setIceG(v);
+                    }}
+                  />
+                </div>
+                <p className="col-span-2 text-xs text-muted-foreground">
+                  xBloom pours {Math.round(brewWaterMl)}ml; add{" "}
+                  {Math.round(iceG)}g ice to the cup.
+                </p>
+              </div>
+            )}
+
             <div className="flex flex-col gap-2">
               <Label htmlFor="url">Product link (optional)</Label>
               <Input

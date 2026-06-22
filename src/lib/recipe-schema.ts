@@ -67,9 +67,9 @@ export const recipeSchema = z.object({
   doseG: z.number().min(5).max(31).describe("Coffee dose in grams"),
   ratio: z
     .number()
-    .min(12)
+    .min(6)
     .max(20)
-    .describe("Numeric brew ratio, e.g. 16 for 1:16. Total water = doseG * ratio"),
+    .describe("Numeric brew-water ratio, e.g. 16 for 1:16. Iced concentrate recipes may be lower. Total pour water = doseG * ratio"),
   grindSize: z
     .number()
     .int()

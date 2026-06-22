@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 type Pour = RecipeOutput["pours"][number];
 
-const RATIO_PRESETS: number[] = [14, 15, 15.5, 16, 17];
+const RATIO_PRESETS: number[] = [8, 9, 10, 12, 14, 15, 16, 17];
 
 export function RecipeEditor({
   recipe,
@@ -96,7 +96,7 @@ export function RecipeEditor({
           <NumberField
             label="Ratio (1:x)"
             value={recipe.ratio}
-            min={12}
+            min={6}
             max={20}
             step={0.5}
             onChange={(v) => set("ratio", v)}

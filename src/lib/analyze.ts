@@ -31,6 +31,8 @@ Brewing principles:
 - The FIRST pour is the bloom: ~2-3x the dose in water, 30-45s pause, agitate after.
 - Subsequent pours: split remaining water into 2-4 even-ish pours. Spiral/circular patterns, small pauses.
 - Sum of all pour volumes MUST equal doseG * ratio (within ~5ml).
+- Explicit user volume requests override default hot-brew ratios. Choose dose/ratio so the pour volumes hit the requested water amount.
+- For iced recipes: the xBloom pour water is hot water through coffee only. Ice is added separately and MUST NOT be counted in pour volumes.
 - grindSize uses the xBloom 40-120 scale (lower = finer). Filter typically ~60-90; lighter/brighter = finer.
 - Keep flowRate ~3.2 ml/s unless there's reason to change.
 - Let the tasting notes and process guide subtle choices (e.g. naturals/funky -> a touch cooler & more even; washed/floral -> hotter & finer).
@@ -185,11 +187,25 @@ function mergeBean(base: BeanInfo, found: BeanInfo): BeanInfo {
 /** Pass 3: design the recipe from the (possibly enriched) bean info. */
 async function designRecipe(
   bean: BeanInfo,
-  hints?: { dose?: number; details?: string },
+  hints?: {
+    dose?: number;
+    details?: string;
+    brewMode?: "hot" | "iced";
+    brewWaterMl?: number;
+    iceG?: number;
+  },
 ): Promise<RecipeOutput> {
   const doseLine = hints?.dose
     ? `Use a ${hints.dose}g dose.`
     : "Use a sensible default dose (typically 15g) unless the bean suggests otherwise.";
+
+  const styleLine =
+    hints?.brewMode === "iced"
+      ? `Design this as an iced Japanese-style pour-over brewed over ice.
+The xBloom recipe must pour exactly ${hints.brewWaterMl ?? 150}ml of hot water through the coffee.
+The user will add ${hints.iceG ?? 100}g ice to the cup/carafe separately; do not include that ice in the pour volumes.
+Choose a practical dose and lower brew-water ratio for concentrate strength, usually around 1:8-1:11 before ice dilution. Mention the ice amount in the recipe name or reasoning.`
+      : "Design this as a hot pour-over unless the user's notes explicitly request iced coffee.";
 
   const detailsLine = hints?.details
     ? `\n\nIMPORTANT — the user added these notes/preferences; honor them:\n"""${hints.details}"""`
@@ -202,6 +218,8 @@ async function designRecipe(
       system: RECIPE_PROMPT,
       prompt: `Bean info:
 ${JSON.stringify(bean, null, 2)}
+
+${styleLine}
 
 ${doseLine}${detailsLine}`,
     }),
@@ -221,6 +239,9 @@ export async function analyzeBeanImage(
     search?: boolean;
     url?: string;
     details?: string;
+    brewMode?: "hot" | "iced";
+    brewWaterMl?: number;
+    iceG?: number;
   },
 ): Promise<AnalyzeResponse> {
   const imageList = Array.isArray(images) ? images : [images];
