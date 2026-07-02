@@ -8,11 +8,9 @@ import {
   ChevronLeft,
   Coffee,
   Scale,
-  Settings,
   Snowflake,
 } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { AccountButton } from "@/components/AccountButton";
+import { GlobalNavActions } from "@/components/GlobalNavActions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -62,23 +60,7 @@ export default function ColdBrewPage() {
             <ChevronLeft className="size-4" /> Back
           </Link>
         </Button>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="rounded-full">
-            <Link href="/recipes">Saved</Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            size="icon"
-            className="rounded-full"
-          >
-            <Link href="/settings" aria-label="Settings">
-              <Settings className="size-4" />
-            </Link>
-          </Button>
-          <AccountButton />
-          <ThemeToggle />
-        </div>
+        <GlobalNavActions current="cold-brew" />
       </header>
 
       <div className="flex flex-col gap-4">

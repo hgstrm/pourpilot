@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { AccountButton } from "@/components/AccountButton";
 import { SettingsForm } from "@/components/SettingsForm";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { GlobalNavActions } from "@/components/GlobalNavActions";
 import { Button } from "@/components/ui/button";
 import { listRuntimeSettingStatuses } from "@/lib/runtime-settings";
 
@@ -20,10 +19,7 @@ export default async function SettingsPage() {
             <ChevronLeft className="size-4" /> Back
           </Link>
         </Button>
-        <div className="flex items-center gap-2">
-          <AccountButton />
-          <ThemeToggle />
-        </div>
+        <GlobalNavActions current="settings" />
       </header>
 
       <div className="mb-5">

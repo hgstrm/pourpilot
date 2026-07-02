@@ -11,6 +11,7 @@ import { AdjustBar } from "@/components/AdjustBar";
 import { BrewLog } from "@/components/BrewLog";
 import { PushConfirm } from "@/components/PushConfirm";
 import { ShareRecipe } from "@/components/ShareRecipe";
+import { GlobalNavActions } from "@/components/GlobalNavActions";
 import { haptics } from "@/lib/haptics";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -148,11 +149,16 @@ export default function RecipeDetail() {
             <ChevronLeft className="size-4" /> Back
           </Link>
         </Button>
-        <div className="flex items-center gap-2">
+        <GlobalNavActions current="recipes" />
+      </header>
+
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-end gap-2">
           {saved.shareUrl && (
             <Button
               variant="outline"
               size="sm"
+              className="rounded-full"
               onClick={() => setShareOpen(true)}
             >
               <Share2 className="size-4" /> Share
@@ -161,15 +167,14 @@ export default function RecipeDetail() {
           <Button
             variant="destructive"
             size="sm"
+            className="rounded-full"
             onClick={() => setDeleteOpen(true)}
             disabled={busy}
           >
             <Trash2 className="size-4" /> Delete
           </Button>
         </div>
-      </header>
 
-      <div className="flex flex-col gap-4">
         {saved.bean && (
           <Card className="gap-3">
             <p className="text-lg font-bold">{saved.bean.name}</p>

@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { SavedRecipeDTO } from "@/lib/client-types";
 import { targetWater } from "@/lib/client-types";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { AccountButton } from "@/components/AccountButton";
+import { GlobalNavActions } from "@/components/GlobalNavActions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, Coffee, Loader2, Settings } from "lucide-react";
+import { ChevronRight, Coffee, Download, Loader2, Plus } from "lucide-react";
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState<SavedRecipeDTO[] | null>(null);
@@ -33,27 +32,21 @@ export default function RecipesPage() {
           <img src="/icon.svg" alt="" className="size-8 rounded-[7px]" />
           <h1 className="text-xl font-bold tracking-tight">Saved recipes</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm" className="rounded-full">
-            <Link href="/import">Import</Link>
-          </Button>
-          <Button asChild size="sm" className="rounded-full">
-            <Link href="/">+ New</Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            size="icon"
-            className="rounded-full"
-          >
-            <Link href="/settings" aria-label="Settings">
-              <Settings className="size-4" />
-            </Link>
-          </Button>
-          <AccountButton />
-          <ThemeToggle />
-        </div>
+        <GlobalNavActions current="recipes" />
       </header>
+
+      <div className="mb-4 grid grid-cols-2 gap-2">
+        <Button asChild variant="outline" className="rounded-full">
+          <Link href="/import">
+            <Download className="size-4" /> Import
+          </Link>
+        </Button>
+        <Button asChild className="rounded-full">
+          <Link href="/">
+            <Plus className="size-4" /> New recipe
+          </Link>
+        </Button>
+      </div>
 
       {error && (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3.5 text-sm text-destructive">

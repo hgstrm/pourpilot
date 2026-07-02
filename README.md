@@ -89,12 +89,11 @@ XBLOOM_CLEANUP=1 pnpm xbloom:test # same, then deletes the test recipe
 | `XBLOOM_PASSWORD` | no | Your xBloom account password; env wins, otherwise add in Settings |
 | `AI_GATEWAY_API_KEY` | no | [Vercel AI Gateway](https://vercel.com/ai-gateway) key; env wins, otherwise add in Settings |
 | `BETTER_AUTH_URL` | no | Public base URL of the app, e.g. `https://pourpilot.example.com` |
-| `ALLOW_SIGNUPS` | no | Set `true` to keep signups open after the first account |
 | `AI_MODEL` | no | Model id, default `openai/gpt-4o` (must support vision + web search) |
 | `EVE_MODEL` | no | Eve assistant model id, default `openai/gpt-4o-mini`; set separately from `AI_MODEL` to reduce assistant-loop rate limits |
 
 The first account can always be created on a new instance. After that, signups
-are closed unless `ALLOW_SIGNUPS=true` is set.
+are closed; PourPilot is designed as a single-owner app.
 
 Values saved in Settings are stored server-side in Postgres and masked when read
 back by the app. Deployment env vars always take priority. The Eve assistant

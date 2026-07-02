@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
   if (isEmailSignUp(request) && !(await canCreateAccount())) {
     return NextResponse.json(
-      { error: "Signups are closed for this PourPilot instance." },
+      { error: "This PourPilot instance already has an owner." },
       { status: 403 },
     );
   }

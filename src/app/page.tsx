@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { toast } from "sonner";
 import type { AnalysisResult, BeanInfo, RecipeOutput } from "@/lib/recipe-schema";
 import { RecipeEditor } from "@/components/RecipeEditor";
 import { AdjustBar } from "@/components/AdjustBar";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { AccountButton } from "@/components/AccountButton";
 import { SetupNotice } from "@/components/SetupNotice";
+import { GlobalNavActions } from "@/components/GlobalNavActions";
 import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -20,8 +18,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
   Camera,
-  Bot,
-  Calculator,
   CheckCircle2,
   Flame,
   ImagePlus,
@@ -30,7 +26,6 @@ import {
   NotebookPen,
   Plus,
   Search,
-  Settings,
   Snowflake,
   Sparkles,
   X,
@@ -200,43 +195,7 @@ export default function Home() {
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <Button
-            asChild
-            variant="outline"
-            size="icon"
-            className="rounded-full"
-          >
-            <Link href="/cold-brew" aria-label="Cold brew calculator">
-              <Calculator className="size-4" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            size="icon"
-            className="rounded-full"
-          >
-            <Link href="/assistant" aria-label="Assistant">
-              <Bot className="size-4" />
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="rounded-full">
-            <Link href="/recipes">Saved</Link>
-          </Button>
-          <Button
-            asChild
-            variant="outline"
-            size="icon"
-            className="rounded-full"
-          >
-            <Link href="/settings" aria-label="Settings">
-              <Settings className="size-4" />
-            </Link>
-          </Button>
-          <AccountButton />
-          <ThemeToggle />
-        </div>
+        <GlobalNavActions current="home" />
       </header>
 
       {stage === "capture" && (

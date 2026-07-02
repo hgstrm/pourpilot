@@ -65,7 +65,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             </h1>
             <p className="text-sm text-muted-foreground">
               {isSignUp
-                ? "First account unlocks this PourPilot instance."
+                ? "Create the only account for this PourPilot instance."
                 : "Welcome back to PourPilot."}
             </p>
           </div>
@@ -128,9 +128,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
             </>
           ) : (
             <>
-              New self-host?{" "}
+              Setting up a fresh instance?{" "}
               <Link className="font-semibold text-primary" href="/sign-up">
-                Create the first account
+                Create the owner account
               </Link>
             </>
           )}
@@ -138,8 +138,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
         {isSignUp && (
           <p className="rounded-lg border bg-secondary/40 p-3 text-xs text-muted-foreground">
-            After the first account exists, signups are closed unless
-            `ALLOW_SIGNUPS=true` is set.
+            Only one account can exist. After it is created, signups are closed
+            for this instance.
           </p>
         )}
       </Card>

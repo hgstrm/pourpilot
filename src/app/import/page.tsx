@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { haptics } from "@/lib/haptics";
+import { GlobalNavActions } from "@/components/GlobalNavActions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Download, Loader2 } from "lucide-react";
@@ -54,13 +55,16 @@ export default function ImportPage() {
 
   return (
     <main className="app-wrap">
-      <header className="flex items-center gap-3 mb-5">
-        <Button asChild variant="outline" size="sm" className="rounded-full">
-          <Link href="/recipes">
-            <ChevronLeft className="size-4" /> Back
-          </Link>
-        </Button>
-        <h1 className="text-lg font-bold">Import from xBloom</h1>
+      <header className="mb-5 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <Button asChild variant="outline" size="sm" className="rounded-full">
+            <Link href="/recipes">
+              <ChevronLeft className="size-4" /> Back
+            </Link>
+          </Button>
+          <h1 className="truncate text-lg font-bold">Import from xBloom</h1>
+        </div>
+        <GlobalNavActions current="recipes" />
       </header>
 
       {error && (

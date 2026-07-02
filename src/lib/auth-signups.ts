@@ -4,7 +4,6 @@ import { assertDatabaseConfigured, databaseUrl } from "./database-url";
 type CountRow = { count: string | number };
 
 export async function canCreateAccount(): Promise<boolean> {
-  if (process.env.ALLOW_SIGNUPS === "true") return true;
   return (await authUserCount()) === 0;
 }
 

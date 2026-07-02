@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogOut, UserRound } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 
@@ -23,12 +23,11 @@ export function AccountButton() {
       variant="outline"
       size="icon"
       className="rounded-full"
-      title={session.user.email}
+      title={`Sign out ${session.user.email}`}
       aria-label={`Sign out ${session.user.email}`}
       onClick={signOut}
     >
-      <UserRound className="size-4" />
-      <LogOut className="sr-only" />
+      <LogOut className="size-4" />
     </Button>
   );
 }
