@@ -189,8 +189,18 @@ export default function RecipeDetail() {
         <AdjustBar
           recipe={recipe}
           bean={saved.bean}
+          savedId={id}
           onAdjusted={(next, note) => {
             setRecipe(next);
+            setSaved((current) =>
+              current
+                ? {
+                    ...current,
+                    name: next.name,
+                    recipe: next,
+                  }
+                : current,
+            );
             toast.success(note);
           }}
           onError={(msg) => toast.error(msg)}

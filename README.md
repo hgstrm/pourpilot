@@ -29,6 +29,8 @@ Phone-first. Built to use standing next to the machine.
   variations too.
 - **📖 Brew log** — rate each brew and keep tasting notes per recipe.
 - **📥 Import** — pull recipes already on your xBloom account in to tweak.
+- **🤖 Eve assistant** — chat with an agent that can analyze, adjust, save, and
+  approval-gate xBloom pushes.
 - **🎨 Light & dark** — light by default, toggle persisted.
 - **📱 PWA** — Add to Home Screen for an app-like feel.
 
@@ -56,7 +58,7 @@ Then, in your new Vercel project:
 
 ## 🛠️ Local development
 
-Requires Node 20+ and [pnpm](https://pnpm.io).
+Requires Node 24+ and [pnpm](https://pnpm.io).
 
 ```bash
 git clone https://github.com/hgstrm/pourpilot.git
@@ -107,6 +109,7 @@ photo(s) ─▶ /api/analyze ─▶ read bag (vision) ─▶ research (web searc
 ```
 
 - **Framework:** Next.js (App Router) + TypeScript, deployed on Vercel.
+- **Agent:** Eve, mounted into Next.js with same-origin `/eve/v1/*` routes.
 - **AI:** Vercel AI Gateway via the AI SDK; structured output validated with
   Zod; native web search tool for bean lookups.
 - **Storage:** Neon serverless Postgres.

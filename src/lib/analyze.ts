@@ -1,5 +1,6 @@
 import { generateObject, generateText, stepCountIs } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { z } from "zod";
 import {
   analysisSchema,
   beanInfoSchema,
@@ -14,6 +15,11 @@ import { normalizePours } from "./client-types";
 const READ_PROMPT = `You are reading a photo of a coffee bag.
 Extract ONLY what is actually printed/visible on the bag: name, roaster, origin, process, varietal, roast level, tasting notes.
 If something is not visible, set it to null (or an empty array for notes). NEVER invent or guess specific facts.`;
+
+const TEXT_CONTEXT_PROMPT = `You are reading optional coffee context typed by a user.
+Extract only bean facts the user directly gave: coffee name, roaster, origin, process, varietal, roast level, and tasting notes.
+The text may also include brewing preferences; do not turn preferences into bean facts.
+If something is not directly stated, set it to null (or an empty array for notes).`;
 
 const RESEARCH_PROMPT = `You are a specialty coffee researcher. You are given partial info read off a coffee bag.
 Use web search to look up the SPECIFIC coffee (by roaster + name) and fill in the missing details:
@@ -47,6 +53,18 @@ function isSparse(bean: BeanInfo): boolean {
   return missing || fewNotes;
 }
 
+function emptyBean(): BeanInfo {
+  return {
+    name: null,
+    roaster: null,
+    origin: null,
+    process: null,
+    varietal: null,
+    roastLevel: "unknown",
+    tastingNotes: [],
+  };
+}
+
 /** Pass 1: read what's actually on the bag (one or more photos). */
 async function readBag(imageDataUrls: string[]): Promise<BeanInfo> {
   const intro =
@@ -69,6 +87,19 @@ async function readBag(imageDataUrls: string[]): Promise<BeanInfo> {
           ],
         },
       ],
+    }),
+  );
+  return object;
+}
+
+/** Optional context path: parse typed bean facts when no photo is supplied. */
+async function readTextContext(details: string): Promise<BeanInfo> {
+  const { object } = await withRetry(() =>
+    generateObject({
+      model: MODEL,
+      schema: beanInfoSchema,
+      system: TEXT_CONTEXT_PROMPT,
+      prompt: details,
     }),
   );
   return object;
@@ -232,8 +263,13 @@ export type AnalyzeResponse = AnalysisResult & {
   searched: boolean;
 };
 
+export const analyzeResponseSchema = analysisSchema.extend({
+  sources: z.array(z.string()),
+  searched: z.boolean(),
+});
+
 export async function analyzeBeanImage(
-  images: string | string[],
+  images: string | string[] = [],
   hints?: {
     dose?: number;
     search?: boolean;
@@ -244,15 +280,24 @@ export async function analyzeBeanImage(
     iceG?: number;
   },
 ): Promise<AnalyzeResponse> {
-  const imageList = Array.isArray(images) ? images : [images];
+  const imageList = Array.isArray(images) ? images : images ? [images] : [];
 
-  // Pass 1 — read the bag (front + back if provided).
-  let bean = await readBag(imageList);
+  // Pass 1 — read the bag when photos exist. Without photos, typed notes are
+  // treated as optional bean facts while preferences remain recipe hints.
+  let bean = imageList.length > 0 ? await readBag(imageList) : emptyBean();
+  if (imageList.length === 0 && hints?.details?.trim()) {
+    bean = await readTextContext(hints.details.trim());
+  }
 
   // Pass 2 — enrich via web search. A product URL always triggers research;
   // otherwise only when the bag is sparse (or explicitly requested).
   // Failures are non-fatal.
-  const shouldSearch = Boolean(hints?.url) || (hints?.search ?? isSparse(bean));
+  const hasSearchableBean = Boolean(bean.name || bean.roaster);
+  const shouldSearch =
+    Boolean(hints?.url) ||
+    (imageList.length > 0
+      ? (hints?.search ?? isSparse(bean))
+      : Boolean(hints?.search && hasSearchableBean));
   let sources: string[] = [];
   let searched = false;
   if (shouldSearch) {

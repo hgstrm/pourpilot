@@ -5,6 +5,12 @@
 /.next/
 /out/
 
+# eve
+/.eve/
+/.output/
+/.pnpm-store/
+/.workflow-data/
+
 # production
 /build
 

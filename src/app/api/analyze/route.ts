@@ -33,13 +33,6 @@ export async function POST(req: NextRequest) {
       .filter((i): i is string => typeof i === "string")
       .filter((i) => i.startsWith("data:image/"));
 
-    if (list.length === 0) {
-      return NextResponse.json(
-        { error: "Provide at least one image as a data URL (data:image/...)" },
-        { status: 400 },
-      );
-    }
-
     const cleanUrl = url?.trim() ? url.trim() : undefined;
     const cleanDetails = details?.trim() ? details.trim() : undefined;
     const cleanBrewMode = brewMode === "iced" ? "iced" : "hot";
@@ -84,6 +77,6 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(result);
   } catch (err) {
-    return safeError("analyze", err, 500, "Couldn't analyze that photo.");
+    return safeError("analyze", err, 500, "Couldn't build that recipe.");
   }
 }
