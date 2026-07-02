@@ -272,6 +272,8 @@ export function AssistantChat() {
         )}
 
         {agent.data.messages.map((message, messageIndex) => {
+          const suppressText =
+            message.role === "assistant" && messageHasSavedRecipes(message);
           const hasVisibleParts = message.parts.some(hasVisibleMessagePart);
           const isLastMessage =
             messageIndex === agent.data.messages.length - 1;
@@ -297,6 +299,7 @@ export function AssistantChat() {
                     <MessagePart
                       key={`${message.id}-${index}`}
                       part={part}
+                      suppressText={suppressText}
                       onRespond={async (requestId, optionId) => {
                         try {
                           await agent.send({
@@ -427,16 +430,19 @@ export function AssistantChat() {
 
 function MessagePart({
   part,
+  suppressText,
   onRespond,
   onPickRecipe,
   selectedRecipeId,
 }: {
   part: EveMessagePart;
+  suppressText?: boolean;
   onRespond: (requestId: string, optionId: string) => Promise<void>;
   onPickRecipe: (recipe: SavedRecipePreview) => void;
   selectedRecipeId?: string;
 }) {
   if (part.type === "text") {
+    if (suppressText) return null;
     return <p className="whitespace-pre-wrap leading-relaxed">{part.text}</p>;
   }
 
@@ -961,6 +967,17 @@ function hasVisibleMessagePart(part: EveMessagePart): boolean {
   if (part.type === "authorization") return true;
   if (part.type !== "dynamic-tool") return false;
   return part.toolName !== "load_skill";
+}
+
+function messageHasSavedRecipes(message: {
+  parts: readonly EveMessagePart[];
+}): boolean {
+  return message.parts.some(
+    (part) =>
+      part.type === "dynamic-tool" &&
+      part.toolName === "list_saved_recipes" &&
+      part.state === "output-available",
+  );
 }
 
 function shouldBlockRecipeAdjustment(

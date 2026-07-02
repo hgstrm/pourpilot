@@ -88,6 +88,7 @@ XBLOOM_CLEANUP=1 pnpm xbloom:test # same, then deletes the test recipe
 | `AI_GATEWAY_API_KEY` | yes | [Vercel AI Gateway](https://vercel.com/ai-gateway) key (vision + web search) |
 | `DATABASE_URL` | yes | Neon Postgres connection string (or `POSTGRES_URL`) |
 | `AI_MODEL` | no | Model id, default `openai/gpt-4o` (must support vision + web search) |
+| `EVE_MODEL` | no | Eve assistant model id, default `openai/gpt-4o-mini`; set separately from `AI_MODEL` to reduce assistant-loop rate limits |
 
 Credentials are used **server-side only** — the browser never sees your xBloom
 password, and it's never written to the database.

@@ -5,7 +5,7 @@ const modelContextWindowTokens = Number(
 );
 
 export default defineAgent({
-  model: process.env.EVE_MODEL || process.env.AI_MODEL || "openai/gpt-4o",
+  model: process.env.EVE_MODEL || "openai/gpt-4o-mini",
   modelContextWindowTokens: Number.isFinite(modelContextWindowTokens)
     ? modelContextWindowTokens
     : 128000,

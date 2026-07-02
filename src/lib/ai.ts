@@ -34,8 +34,8 @@ export async function withRetry<T>(
   fn: () => Promise<T>,
   opts: { attempts?: number; baseMs?: number } = {},
 ): Promise<T> {
-  const attempts = opts.attempts ?? 4;
-  const baseMs = opts.baseMs ?? 800;
+  const attempts = opts.attempts ?? 5;
+  const baseMs = opts.baseMs ?? 1_200;
   let lastErr: unknown;
 
   for (let i = 0; i < attempts; i++) {
@@ -44,7 +44,7 @@ export async function withRetry<T>(
     } catch (err) {
       lastErr = err;
       if (!isRetryable(err) || i === attempts - 1) break;
-      // exponential backoff with jitter: ~0.8s, 1.6s, 3.2s ...
+      // exponential backoff with jitter: ~1.2s, 2.4s, 4.8s ...
       const delay = baseMs * 2 ** i + Math.random() * 300;
       await new Promise((r) => setTimeout(r, delay));
     }

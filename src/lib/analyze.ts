@@ -81,15 +81,26 @@ async function readBag(imageDataUrls: string[]): Promise<BeanInfo> {
           role: "user",
           content: [
             { type: "text", text: intro },
-            ...imageDataUrls.map(
-              (img) => ({ type: "image", image: img }) as const,
-            ),
+            ...imageDataUrls.map(toImageFilePart),
           ],
         },
       ],
     }),
   );
   return object;
+}
+
+function toImageFilePart(dataUrl: string) {
+  return {
+    type: "file",
+    data: { type: "data", data: dataUrl },
+    mediaType: mediaTypeFromDataUrl(dataUrl),
+  } as const;
+}
+
+function mediaTypeFromDataUrl(dataUrl: string): string {
+  const match = /^data:([^;,]+)[;,]/.exec(dataUrl);
+  return match?.[1] || "image";
 }
 
 /** Optional context path: parse typed bean facts when no photo is supplied. */
