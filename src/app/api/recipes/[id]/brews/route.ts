@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { listBrews, createBrew } from "@/lib/db";
 import { recipeSchema } from "@/lib/recipe-schema";
 import { safeError } from "@/lib/api-error";
+import { requireApiUser } from "@/lib/auth-guard";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -16,6 +17,9 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: Ctx) {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const { id } = await params;
     const brews = await listBrews(id);
     return NextResponse.json({ brews });
@@ -26,6 +30,9 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
 
 export async function POST(req: NextRequest, { params }: Ctx) {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const { id } = await params;
     const parsed = body.safeParse(await req.json());
     if (!parsed.success) {

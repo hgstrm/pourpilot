@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { listSavedRecipes, createSavedRecipe } from "@/lib/db";
 import { recipeSchema, beanInfoSchema } from "@/lib/recipe-schema";
 import { safeError } from "@/lib/api-error";
+import { requireApiUser } from "@/lib/auth-guard";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -14,6 +15,9 @@ const createBody = z.object({
 
 export async function GET() {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const recipes = await listSavedRecipes();
     return NextResponse.json({ recipes });
   } catch (err) {
@@ -23,6 +27,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const parsed = createBody.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json(

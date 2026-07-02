@@ -17,6 +17,7 @@ import {
   Save,
   Scale,
   Send,
+  Settings,
   SlidersHorizontal,
   Thermometer,
   Timer,
@@ -27,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountButton } from "@/components/AccountButton";
 import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
@@ -210,7 +212,20 @@ export function AssistantChat() {
             </p>
           </div>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            size="icon"
+            className="rounded-full"
+          >
+            <Link href="/settings" aria-label="Settings">
+              <Settings className="size-4" />
+            </Link>
+          </Button>
+          <AccountButton />
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="flex flex-col gap-3 pb-44">

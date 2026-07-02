@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { MODEL, withRetry } from "./ai";
+import { getModel, withRetry } from "./ai";
 import { normalizePours } from "./client-types";
 import {
   recipeSchema,
@@ -56,9 +56,9 @@ export async function adjustRecipe(input: {
     ? `Bean info:\n${JSON.stringify(beanInfoSchema.parse(input.bean), null, 2)}\n\n`
     : "";
 
-  const { object } = await withRetry(() =>
+  const { object } = await withRetry(async () =>
     generateObject({
-      model: MODEL,
+      model: await getModel(),
       schema: adjustSchema,
       system: ADJUST_PROMPT,
       prompt: `${beanLine}Current recipe:
@@ -76,12 +76,4 @@ Produce the improved full recipe and a short changeNote.`,
   return { ...normalized, changeNote: object.changeNote } as AdjustedRecipe;
 }
 
-// Preset one-tap remixes / feedback chips surfaced in the UI.
-export const FEEDBACK_PRESETS = [
-  { key: "bitter", label: "Too bitter", feedback: "The last brew was too bitter / harsh." },
-  { key: "sour", label: "Too sour", feedback: "The last brew was too sour / sharp." },
-  { key: "weak", label: "Too weak", feedback: "The last brew was too weak / watery." },
-  { key: "strong", label: "Too strong", feedback: "The last brew was too strong / intense." },
-  { key: "brighter", label: "Brighter", feedback: "Make a brighter version with more acidity and clarity." },
-  { key: "sweeter", label: "Sweeter", feedback: "Make a sweeter, rounder version with more body." },
-] as const;
+export { FEEDBACK_PRESETS } from "./feedback-presets";

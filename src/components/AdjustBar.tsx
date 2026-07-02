@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useEveAgent, type EveMessagePart } from "eve/react";
 import type { RecipeOutput, BeanInfo } from "@/lib/recipe-schema";
 import { recipeSchema } from "@/lib/recipe-schema";
-import { FEEDBACK_PRESETS } from "@/lib/adjust";
+import { FEEDBACK_PRESETS } from "@/lib/feedback-presets";
 import { haptics } from "@/lib/haptics";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

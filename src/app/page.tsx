@@ -7,6 +7,8 @@ import type { AnalysisResult, BeanInfo, RecipeOutput } from "@/lib/recipe-schema
 import { RecipeEditor } from "@/components/RecipeEditor";
 import { AdjustBar } from "@/components/AdjustBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountButton } from "@/components/AccountButton";
+import { SetupNotice } from "@/components/SetupNotice";
 import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -28,6 +30,7 @@ import {
   NotebookPen,
   Plus,
   Search,
+  Settings,
   Snowflake,
   Sparkles,
   X,
@@ -221,12 +224,25 @@ export default function Home() {
           <Button asChild variant="outline" size="sm" className="rounded-full">
             <Link href="/recipes">Saved</Link>
           </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="icon"
+            className="rounded-full"
+          >
+            <Link href="/settings" aria-label="Settings">
+              <Settings className="size-4" />
+            </Link>
+          </Button>
+          <AccountButton />
           <ThemeToggle />
         </div>
       </header>
 
       {stage === "capture" && (
         <div className="flex flex-col gap-4">
+          <SetupNotice />
+
           <section className="overflow-hidden rounded-[1.25rem] border bg-card shadow-sm">
             <div className="border-b bg-secondary/35 px-4 py-3">
               <div className="flex items-start justify-between gap-3">

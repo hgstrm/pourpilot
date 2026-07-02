@@ -9,7 +9,7 @@ import {
   type BeanInfo,
   type RecipeOutput,
 } from "./recipe-schema";
-import { MODEL, withRetry } from "./ai";
+import { getModel, withRetry } from "./ai";
 import { normalizePours } from "./client-types";
 
 const READ_PROMPT = `You are reading a photo of a coffee bag.
@@ -71,9 +71,9 @@ async function readBag(imageDataUrls: string[]): Promise<BeanInfo> {
     imageDataUrls.length > 1
       ? "Read this coffee bag. Multiple photos of the same bag are provided (e.g. front and back) — combine details from all of them."
       : "Read this coffee bag.";
-  const { object } = await withRetry(() =>
+  const { object } = await withRetry(async () =>
     generateObject({
-      model: MODEL,
+      model: await getModel(),
       schema: beanInfoSchema,
       system: READ_PROMPT,
       messages: [
@@ -105,9 +105,9 @@ function mediaTypeFromDataUrl(dataUrl: string): string {
 
 /** Optional context path: parse typed bean facts when no photo is supplied. */
 async function readTextContext(details: string): Promise<BeanInfo> {
-  const { object } = await withRetry(() =>
+  const { object } = await withRetry(async () =>
     generateObject({
-      model: MODEL,
+      model: await getModel(),
       schema: beanInfoSchema,
       system: TEXT_CONTEXT_PROMPT,
       prompt: details,
@@ -143,9 +143,9 @@ ${JSON.stringify(bean, null, 2)}
 Search the web (prefer the roaster's product page) and tell me the origin/region, process, varietal, roast level, and the roaster's published tasting notes. Cite what you find.`;
 
   // STEP A: search the web (plain text answer so the tool actually runs).
-  const search = await withRetry(() =>
+  const search = await withRetry(async () =>
     generateText({
-      model: MODEL,
+      model: await getModel(),
       system: RESEARCH_PROMPT,
       prompt: task,
       tools: {
@@ -169,9 +169,9 @@ Search the web (prefer the roaster's product page) and tell me the origin/region
   if (!search.text) return { bean, sources, searched: calls.length > 0 };
 
   // STEP B: turn the researched prose into structured BeanInfo (no tools here).
-  const { object: found } = await withRetry(() =>
+  const { object: found } = await withRetry(async () =>
     generateObject({
-      model: MODEL,
+      model: await getModel(),
       schema: beanInfoSchema,
       system:
         "Convert the research notes into structured bean info. Only include facts present in the notes; otherwise null.",
@@ -253,9 +253,9 @@ Choose a practical dose and lower brew-water ratio for concentrate strength, usu
     ? `\n\nIMPORTANT — the user added these notes/preferences; honor them:\n"""${hints.details}"""`
     : "";
 
-  const { object } = await withRetry(() =>
+  const { object } = await withRetry(async () =>
     generateObject({
-      model: MODEL,
+      model: await getModel(),
       schema: recipeSchema,
       system: RECIPE_PROMPT,
       prompt: `Bean info:

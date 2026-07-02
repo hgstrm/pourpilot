@@ -4,11 +4,15 @@ import {
   pushRecipeToXbloom,
 } from "@/lib/xbloom/push";
 import { safeError } from "@/lib/api-error";
+import { requireApiUser } from "@/lib/auth-guard";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const parsed = pushRecipeInputSchema.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json(

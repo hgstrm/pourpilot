@@ -1,7 +1,23 @@
+import { createGateway } from "ai";
+import {
+  assertAiGatewayConfigured,
+  getAiGatewayApiKey,
+  hasAiGatewayEnvironmentAuth,
+} from "./runtime-settings";
+
 // Shared AI helpers: the model id and a retry/backoff wrapper so transient
 // Gateway rate-limits / hiccups don't surface as scary errors.
 
-export const MODEL = process.env.AI_MODEL || "openai/gpt-4o";
+const MODEL_ID = process.env.AI_MODEL || "openai/gpt-4o";
+
+export async function getModel() {
+  const apiKey = await getAiGatewayApiKey();
+  if (apiKey) return createGateway({ apiKey })(MODEL_ID);
+  if (hasAiGatewayEnvironmentAuth()) return MODEL_ID;
+
+  await assertAiGatewayConfigured();
+  return MODEL_ID;
+}
 
 /** True if the error looks like a transient rate-limit / overload. */
 function isRetryable(err: unknown): boolean {

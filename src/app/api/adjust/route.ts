@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adjustRecipe } from "@/lib/adjust";
 import { recipeSchema, beanInfoSchema } from "@/lib/recipe-schema";
 import { safeError } from "@/lib/api-error";
+import { requireApiUser } from "@/lib/auth-guard";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -15,6 +16,9 @@ const body = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const parsed = body.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json(

@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeBeanImage } from "@/lib/analyze";
 import { safeError } from "@/lib/api-error";
+import { requireApiUser } from "@/lib/auth-guard";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const {
       image,
       images,

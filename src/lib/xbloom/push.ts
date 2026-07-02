@@ -2,6 +2,7 @@ import { z } from "zod";
 import { getSavedRecipe, updateSavedRecipe } from "../db";
 import { normalizePours } from "../client-types";
 import { recipeSchema } from "../recipe-schema";
+import { getXbloomCredentials } from "../runtime-settings";
 import { createRecipe, editRecipe, login } from "./client";
 import type { CoffeeRecipe } from "./types";
 
@@ -31,11 +32,7 @@ export type PushRecipeResult = z.infer<typeof pushRecipeResultSchema>;
 export async function pushRecipeToXbloom(
   input: PushRecipeInput,
 ): Promise<PushRecipeResult> {
-  const email = process.env.XBLOOM_EMAIL;
-  const password = process.env.XBLOOM_PASSWORD;
-  if (!email || !password) {
-    throw new Error("Server is missing XBLOOM_EMAIL / XBLOOM_PASSWORD env vars");
-  }
+  const { email, password } = await getXbloomCredentials();
 
   const r = normalizePours(input.recipe);
   const recipe: CoffeeRecipe = {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { RateLimitError } from "./ai";
+import { RuntimeSettingsError } from "./runtime-settings";
 import { XbloomError } from "./xbloom/client";
 
 // Returns a JSON error response that's safe to send to the browser.
@@ -9,7 +10,7 @@ import { XbloomError } from "./xbloom/client";
 // connection string or internal host) is replaced with a generic message —
 // the real detail is logged server-side only.
 
-const SAFE_ERRORS = [XbloomError, RateLimitError];
+const SAFE_ERRORS = [XbloomError, RateLimitError, RuntimeSettingsError];
 
 export function safeError(
   context: string,

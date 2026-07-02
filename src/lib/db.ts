@@ -1,5 +1,6 @@
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 import type { BeanInfo, RecipeOutput } from "./recipe-schema";
+import { assertDatabaseConfigured, databaseUrl } from "./database-url";
 
 // Neon serverless Postgres. Connection string is provided by the Vercel
 // Neon integration as DATABASE_URL (or POSTGRES_URL). HTTP driver — perfect
@@ -9,17 +10,10 @@ import type { BeanInfo, RecipeOutput } from "./recipe-schema";
 // (it's only required when a DB-backed route is actually hit).
 let _sql: NeonQueryFunction<false, false> | null = null;
 
-function getSql(): NeonQueryFunction<false, false> {
+export function getSql(): NeonQueryFunction<false, false> {
   if (_sql) return _sql;
-  const connectionString =
-    process.env.DATABASE_URL || process.env.POSTGRES_URL || "";
-  if (!connectionString) {
-    throw new Error(
-      "No DATABASE_URL/POSTGRES_URL set. Add the Neon integration on Vercel " +
-        "(or set it in .env.local) to enable saving recipes.",
-    );
-  }
-  _sql = neon(connectionString);
+  assertDatabaseConfigured();
+  _sql = neon(databaseUrl());
   return _sql;
 }
 
@@ -64,6 +58,13 @@ export async function ensureSchema(): Promise<void> {
     )
   `;
   await sql`CREATE INDEX IF NOT EXISTS brews_recipe_idx ON brews(recipe_id)`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key        TEXT PRIMARY KEY,
+      value      TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
   initialized = true;
 }
 

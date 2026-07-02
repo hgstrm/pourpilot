@@ -6,6 +6,7 @@ import {
 } from "@/lib/db";
 import { recipeSchema, beanInfoSchema } from "@/lib/recipe-schema";
 import { safeError } from "@/lib/api-error";
+import { requireApiUser } from "@/lib/auth-guard";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -20,6 +21,9 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: Ctx) {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const { id } = await params;
     const recipe = await getSavedRecipe(id);
     if (!recipe) {
@@ -33,6 +37,9 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
 
 export async function PATCH(req: NextRequest, { params }: Ctx) {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const { id } = await params;
     const parsed = updateBody.safeParse(await req.json());
     if (!parsed.success) {
@@ -53,6 +60,9 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
 
 export async function DELETE(_req: NextRequest, { params }: Ctx) {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const { id } = await params;
     const ok = await deleteSavedRecipe(id);
     if (!ok) {

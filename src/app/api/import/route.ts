@@ -3,21 +3,19 @@ import { login, listRecipesFull } from "@/lib/xbloom/client";
 import { createSavedRecipe } from "@/lib/db";
 import type { RecipeOutput } from "@/lib/recipe-schema";
 import { safeError } from "@/lib/api-error";
+import { requireApiUser } from "@/lib/auth-guard";
+import { getXbloomCredentials } from "@/lib/runtime-settings";
 import { z } from "zod";
 
 export const runtime = "nodejs";
 
-function creds() {
-  const email = process.env.XBLOOM_EMAIL;
-  const password = process.env.XBLOOM_PASSWORD;
-  if (!email || !password) throw new Error("Missing XBLOOM_EMAIL / XBLOOM_PASSWORD");
-  return { email, password };
-}
-
 // GET /api/import -> list recipes currently on the xBloom account.
 export async function GET() {
   try {
-    const { email, password } = creds();
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
+    const { email, password } = await getXbloomCredentials();
     const session = await login(email, password);
     const recipes = await listRecipesFull(session);
     return NextResponse.json({ recipes });
@@ -31,11 +29,14 @@ const importBody = z.object({ xbloomId: z.number() });
 // POST /api/import { xbloomId } -> copy that xBloom recipe into our DB.
 export async function POST(req: NextRequest) {
   try {
+    const unauthorized = await requireApiUser();
+    if (unauthorized) return unauthorized;
+
     const parsed = importBody.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
-    const { email, password } = creds();
+    const { email, password } = await getXbloomCredentials();
     const session = await login(email, password);
     const all = await listRecipesFull(session);
     const found = all.find((r) => r.id === parsed.data.xbloomId);

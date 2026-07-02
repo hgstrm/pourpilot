@@ -39,20 +39,20 @@ Phone-first. Built to use standing next to the machine.
 ## 🚀 Quick start (self-host)
 
 This is a **self-hosted template**: you run your own copy with your own
-accounts. Your xBloom credentials live only in your deployment.
+accounts. Bring a database and auth secret first; app credentials can be added
+from Settings after sign-in.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fhgstrm%2Fpourpilot&env=XBLOOM_EMAIL,XBLOOM_PASSWORD,AI_GATEWAY_API_KEY&envDescription=xBloom%20login%20and%20a%20Vercel%20AI%20Gateway%20key&envLink=https%3A%2F%2Fgithub.com%2Fhgstrm%2Fpourpilot%23environment-variables&project-name=pourpilot&repository-name=pourpilot)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fhgstrm%2Fpourpilot&env=BETTER_AUTH_SECRET,BETTER_AUTH_URL&envDescription=Better%20Auth%20setup.%20Add%20xBloom%20and%20AI%20Gateway%20credentials%20from%20Settings%20after%20sign-in.&envLink=https%3A%2F%2Fgithub.com%2Fhgstrm%2Fpourpilot%23environment-variables&project-name=pourpilot&repository-name=pourpilot)
 
 Then, in your new Vercel project:
 
 1. **Storage → Neon** — add the Neon integration. It sets `DATABASE_URL`
    automatically. (Tables are created on first use.)
-2. **AI Gateway** — enable it and add `AI_GATEWAY_API_KEY` (used for the vision
-   model + web search). Make sure the gateway has credits.
-3. Confirm `XBLOOM_EMAIL` and `XBLOOM_PASSWORD` are set.
-4. **Settings → Deployment Protection → On.** ⚠️ Important: this keeps your
-   deployment private to you. Anyone who can reach the app brews into *your*
-   xBloom account.
+2. Set `BETTER_AUTH_SECRET` with `openssl rand -base64 32`.
+3. Set `BETTER_AUTH_URL` to the deployed app URL.
+4. Deploy, then create the first account from `/sign-up`.
+5. Open `/settings` and add `AI_GATEWAY_API_KEY`, `XBLOOM_EMAIL`, and
+   `XBLOOM_PASSWORD` if you did not set them as deployment env vars.
 
 ---
 
@@ -83,15 +83,23 @@ XBLOOM_CLEANUP=1 pnpm xbloom:test # same, then deletes the test recipe
 
 | Var | Required | What |
 | --- | --- | --- |
-| `XBLOOM_EMAIL` | yes | Your xBloom account email (server-side only) |
-| `XBLOOM_PASSWORD` | yes | Your xBloom account password (server-side only) |
-| `AI_GATEWAY_API_KEY` | yes | [Vercel AI Gateway](https://vercel.com/ai-gateway) key (vision + web search) |
 | `DATABASE_URL` | yes | Neon Postgres connection string (or `POSTGRES_URL`) |
+| `BETTER_AUTH_SECRET` | yes | Secret for Better Auth cookies/sessions; generate with `openssl rand -base64 32` |
+| `XBLOOM_EMAIL` | no | Your xBloom account email; env wins, otherwise add in Settings |
+| `XBLOOM_PASSWORD` | no | Your xBloom account password; env wins, otherwise add in Settings |
+| `AI_GATEWAY_API_KEY` | no | [Vercel AI Gateway](https://vercel.com/ai-gateway) key; env wins, otherwise add in Settings |
+| `BETTER_AUTH_URL` | no | Public base URL of the app, e.g. `https://pourpilot.example.com` |
+| `ALLOW_SIGNUPS` | no | Set `true` to keep signups open after the first account |
 | `AI_MODEL` | no | Model id, default `openai/gpt-4o` (must support vision + web search) |
 | `EVE_MODEL` | no | Eve assistant model id, default `openai/gpt-4o-mini`; set separately from `AI_MODEL` to reduce assistant-loop rate limits |
 
-Credentials are used **server-side only** — the browser never sees your xBloom
-password, and it's never written to the database.
+The first account can always be created on a new instance. After that, signups
+are closed unless `ALLOW_SIGNUPS=true` is set.
+
+Values saved in Settings are stored server-side in Postgres and masked when read
+back by the app. Deployment env vars always take priority. The Eve assistant
+runtime still uses deployment env or Vercel OIDC for its own model calls; the
+settings page powers recipe generation/adjustment and xBloom sync.
 
 ---
 

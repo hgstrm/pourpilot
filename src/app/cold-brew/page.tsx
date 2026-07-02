@@ -3,8 +3,16 @@
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Calculator, ChevronLeft, Coffee, Scale, Snowflake } from "lucide-react";
+import {
+  Calculator,
+  ChevronLeft,
+  Coffee,
+  Scale,
+  Settings,
+  Snowflake,
+} from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountButton } from "@/components/AccountButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -58,6 +66,17 @@ export default function ColdBrewPage() {
           <Button asChild variant="outline" size="sm" className="rounded-full">
             <Link href="/recipes">Saved</Link>
           </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="icon"
+            className="rounded-full"
+          >
+            <Link href="/settings" aria-label="Settings">
+              <Settings className="size-4" />
+            </Link>
+          </Button>
+          <AccountButton />
           <ThemeToggle />
         </div>
       </header>

@@ -5,10 +5,11 @@ import Link from "next/link";
 import type { SavedRecipeDTO } from "@/lib/client-types";
 import { targetWater } from "@/lib/client-types";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountButton } from "@/components/AccountButton";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, Coffee, Loader2 } from "lucide-react";
+import { ChevronRight, Coffee, Loader2, Settings } from "lucide-react";
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState<SavedRecipeDTO[] | null>(null);
@@ -39,6 +40,17 @@ export default function RecipesPage() {
           <Button asChild size="sm" className="rounded-full">
             <Link href="/">+ New</Link>
           </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="icon"
+            className="rounded-full"
+          >
+            <Link href="/settings" aria-label="Settings">
+              <Settings className="size-4" />
+            </Link>
+          </Button>
+          <AccountButton />
           <ThemeToggle />
         </div>
       </header>
